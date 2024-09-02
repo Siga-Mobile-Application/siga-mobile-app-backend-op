@@ -4,7 +4,8 @@ import bcrypt from 'bcrypt'
 
 export default class Data {
     static async get(req: Request, res: Response) {
-        const {user, pass} = req.body;
+        const {user, pass} = req.params;
+        console.log(req.params);
 
         if(!user || !pass) return res.status(400).json({error: "Nome obrigatório"});
 
@@ -15,7 +16,7 @@ export default class Data {
 
         await page.goto(url, {waitUntil: 'networkidle2'});
 
-        const credential = {user: bcrypt.hashSync(user, 10), pass: bcrypt.hashSync(pass, 10)}
+        const credential = {user: user, pass: pass}; //bcrypt.hashSync(user, 10), pass: bcrypt.hashSync(pass, 10)}
 
         const nameInput = '#vSIS_USUARIOID';
         await page.type(nameInput, credential.user);
