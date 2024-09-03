@@ -15,7 +15,8 @@ export default class Data {
 
         await page.goto(url, {waitUntil: 'networkidle2'});
 
-        const credential = {user: bcrypt.hashSync(user, 10), pass: bcrypt.hashSync(pass, 10)}
+        const credential = {user: user, pass: pass}
+        //user: bcrypt.hashSync(user, 10), pass: bcrypt.hashSync(pass, 10)
 
         const nameInput = '#vSIS_USUARIOID';
         await page.type(nameInput, credential.user);
