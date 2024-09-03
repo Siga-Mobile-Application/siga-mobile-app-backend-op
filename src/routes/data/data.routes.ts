@@ -3,6 +3,6 @@ import Data from "../../controller/data";
 
 const dataRoutes = Router();
 
-dataRoutes.get('/:user/:pass', Data.get);
+dataRoutes.post('/:user/:pass', Data.get);
 
 export default dataRoutes;

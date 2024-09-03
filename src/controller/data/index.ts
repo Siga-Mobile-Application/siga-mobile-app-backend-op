@@ -4,10 +4,9 @@ import bcrypt from 'bcrypt'
 
 export default class Data {
     static async get(req: Request, res: Response) {
-        const {user, pass} = req.params;
-        console.log(req.params);
+        const {user, pass} = req.body;
 
-        if(!user || !pass) return res.status(400).json({error: "Nome obrigatório"});
+        if(!user || !pass) return res.status(400).json({error: "Preencha todos os campos"});
 
         const url = 'https://siga.cps.sp.gov.br/aluno/login.aspx?'
 
