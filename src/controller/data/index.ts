@@ -45,7 +45,7 @@ export default class Data {
         await page.locator('.PopupHeaderButton').click();
 
         const raId = 'span_MPW0041vACD_ALUNOCURSOREGISTROACADEMICOCURSO';
-        const ra = await page.waitForSelector(`span #${raId}`).then((res) => {
+        const ra = await page.waitForSelector(`#${raId}`).then((res) => {
             return res?.evaluate(val => val.textContent);
         });
 
