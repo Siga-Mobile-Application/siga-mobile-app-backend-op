@@ -41,10 +41,13 @@ export default class Data {
             return res?.evaluate(val => val.textContent)
         });
 
-        console.log(name + ' | ' + email);
+        const imageId = 'MPW0041FOTO'
+        const image = await page.waitForSelector(`div #${imageId}`).then((res) => {
+            return res?.evaluate(val => val.querySelector('img')?.getAttribute('src'));
+        });
 
         await browser.close();
 
-        return res.status(200).json({name: name, email: email});
+        return res.status(200).json({name: name, email: email, picture: image});
     }
 }
