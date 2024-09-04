@@ -1,6 +1,5 @@
 import { Request, Response } from 'express'
 import puppeteer from "puppeteer";
-import bcrypt from 'bcrypt'
 
 export default class Data {
     static async get(req: Request, res: Response) {
@@ -33,12 +32,12 @@ export default class Data {
 
         const nameId = 'span_MPW0041vPRO_PESSOALNOME'
         const name = await page.waitForSelector(`div #${nameId}`).then((res) => {
-            return res?.evaluate(val => val.textContent)
+            return res?.evaluate(val => val.textContent?.substring(0, val.textContent?.lastIndexOf(' ')));
         });
         
         const emailId = 'span_MPW0041vINSTITUCIONALFATEC'
         const email = await page.waitForSelector(`div #${emailId}`).then((res) => {
-            return res?.evaluate(val => val.textContent)
+            return res?.evaluate(val => val.textContent);
         });
 
         const imageId = 'MPW0041FOTO'
