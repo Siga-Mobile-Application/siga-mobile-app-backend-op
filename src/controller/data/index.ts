@@ -3,18 +3,18 @@ import puppeteer from "puppeteer";
 
 export default class Data {
     static async get(req: Request, res: Response) {
-        const {user, pass} = req.body;
+        const { user, pass } = req.body;
 
-        if(!user || !pass) return res.status(400).json({error: "Preencha todos os campos"});
+        if (!user || !pass) return res.status(400).json({ error: "Preencha todos os campos" });
 
         const url = 'https://siga.cps.sp.gov.br/aluno/login.aspx?'
 
         const browser = await puppeteer.launch({ headless: true });
         const page = await browser.newPage();
 
-        await page.goto(url, {waitUntil: 'networkidle2'});
+        await page.goto(url, { waitUntil: 'networkidle2' });
 
-        const credential = {user: user, pass: pass}
+        const credential = { user: user, pass: pass }
         //user: bcrypt.hashSync(user, 10), pass: bcrypt.hashSync(pass, 10)
 
         const nameInput = '#vSIS_USUARIOID';
@@ -24,9 +24,23 @@ export default class Data {
         await page.type(passInput, credential.pass);
 
         const confirmButton = 'BTCONFIRMA'
-        await page.click(`input[name=${confirmButton}]`);
+        await page.click(`input[name=${confirmButton}]`).catch(e => {
+            console.log(e);
+        });
 
-        await page.waitForNavigation({waitUntil: 'networkidle0'});        
+        const result = await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 5000 }).then(() => {
+            return '';
+        }).catch(async () => {
+            const resultId = 'span_vSAIDA';
+            const result = await page.waitForSelector(`#${resultId}`).then((res) => {
+                return res?.evaluate(val => val.querySelector('text')?.textContent);
+            }).catch(() => {});
+
+            return result ?? 'Problema com a conexão';
+        });
+
+        //In case of some error occurred
+        if(result) return res.status(400).json({response: result});
 
         await page.locator('.PopupHeaderButton').click();
 
@@ -34,7 +48,7 @@ export default class Data {
         const name = await page.waitForSelector(`div #${nameId}`).then((res) => {
             return res?.evaluate(val => val.textContent?.substring(0, val.textContent?.lastIndexOf(' ')));
         });
-        
+
         const emailId = 'span_MPW0041vINSTITUCIONALFATEC'
         const email = await page.waitForSelector(`div #${emailId}`).then((res) => {
             return res?.evaluate(val => val.textContent);
@@ -47,6 +61,6 @@ export default class Data {
 
         await browser.close();
 
-        return res.status(200).json({name: name, email: email, picture: image});
+        return res.status(200).json({ name: name, email: email, picture: image });
     }
 }
