@@ -44,7 +44,12 @@ export default class Data {
 
         await page.locator('.PopupHeaderButton').click();
 
-        const nameId = 'span_MPW0041vPRO_PESSOALNOME'
+        const raId = 'span_MPW0041vACD_ALUNOCURSOREGISTROACADEMICOCURSO';
+        const ra = await page.waitForSelector(`span #${raId}`).then((res) => {
+            return res?.evaluate(val => val.textContent);
+        });
+
+        const nameId = 'span_MPW0041vPRO_PESSOALNOME';
         const name = await page.waitForSelector(`div #${nameId}`).then((res) => {
             return res?.evaluate(val => val.textContent?.substring(0, val.textContent?.lastIndexOf(' ')));
         });
@@ -61,6 +66,6 @@ export default class Data {
 
         await browser.close();
 
-        return res.status(200).json({ name: name, email: email, picture: image });
+        return res.status(200).json({ ra: ra, name: name, email: email, picture: image });
     }
 }
