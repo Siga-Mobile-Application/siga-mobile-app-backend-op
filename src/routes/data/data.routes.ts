@@ -4,8 +4,9 @@ import authMiddleware from "../../middleware/auth.middleware";
 
 const dataRoutes = Router();
 
-dataRoutes.post('/', authMiddleware, Data.getAll, );
-dataRoutes.post('/history', authMiddleware, Data.getHistory);
-dataRoutes.post('/schedule', authMiddleware, Data.getSchedule);
+dataRoutes.get('/', authMiddleware, Data.getAll);
+dataRoutes.get('/history', authMiddleware, Data.getHistory);
+dataRoutes.get('/schedule', authMiddleware, Data.getSchedule);
+dataRoutes.get('/grade', authMiddleware, Data.getGrade);
 
 export default dataRoutes;
