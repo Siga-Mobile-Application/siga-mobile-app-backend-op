@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { decode } from '../helper/auth';
 import puppeteer from 'puppeteer';
 import { pageLogin } from '../constants';
+import { error } from 'console';
 
 export default async function authMiddleware
     (req: Request, res: Response, next: NextFunction) {
@@ -50,7 +51,7 @@ export default async function authMiddleware
             return result ?? 'Problema com a conexão';
         });
 
-        if (result) return res.status(400).json({ response: result });
+        if (result) return res.status(400).json({ error: result });
 
         await page.locator('.PopupHeaderButton').setTimeout(1000).click().catch(() => { });
         
