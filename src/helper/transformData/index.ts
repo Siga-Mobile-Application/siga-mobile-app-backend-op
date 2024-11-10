@@ -1,9 +1,9 @@
 import { DisciplineHistoryProps } from "../../interfaces/history";
-import { ScheduleProps } from "../../interfaces/schedule";
+import { ScheduleProps, ScheduleClassProps } from "../../interfaces/schedule";
 
-export function transformData(json: string, type: 'history' | 'schedule') {
+export function transformData(json: string, type: 'history' | 'scheduleHeader' | 'scheduleContent') {
     const parsedData: [string[]] = JSON.parse(json);
-    let data: DisciplineHistoryProps[] | ScheduleProps[] = [];
+    let data: any[] = [];
 
     switch (type) {
         case 'history':
@@ -21,17 +21,28 @@ export function transformData(json: string, type: 'history' | 'schedule') {
             });
             break;
 
-        case 'schedule':
+        case 'scheduleHeader':
             data = parsedData.map(item => {
                 return {
-                    sigla: '',
-                    disciplina: '',
-                    turma: '',
-                    professor: 'string',
-                    dia: 'string',
+                    sigla: item[0],
+                    disciplina: item[1],
+                    turma: item[2],
+                    professor: item[3],
+                    dia: '',
                     horario: []
                 }
-            })
+            });
+            break;
+
+        case 'scheduleContent':
+            data = parsedData.map(item => {
+                return {
+                    horario: item[1],
+                    sigla: item[2],
+                    turma: item[3]
+                }
+            });
+            break;
 
         default:
             break;

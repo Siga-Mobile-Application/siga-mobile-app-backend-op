@@ -6,3 +6,9 @@ export interface ScheduleProps {
     dia: string
     horario: string[]
 }
+
+export interface ScheduleClassProps {
+    horario: string
+    sigla: string
+    turma: string
+}

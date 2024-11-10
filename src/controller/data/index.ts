@@ -1,58 +1,14 @@
 import { Request, Response } from 'express'
-import puppeteer from "puppeteer";
+import puppeteer, { Browser, Page } from "puppeteer";
 import { decode } from '../../helper/auth';
 import { transformData } from '../../helper/transformData';
 import { globalContainerData, pageHistory, pageSchedule, pageLogin } from '../../constants';
+import { ScheduleClassProps, ScheduleProps } from '../../interfaces/schedule';
 
 export default class Data {
     static async getAll(req: Request, res: Response) {
-        const { auth } = req.body;
-
-        if (!auth) return res.status(400).json({ error: "Preencha todos os campos" });
-
-        const credentials = decode(auth);
-
-        const user = credentials.substring(0, credentials.lastIndexOf(' | ')).trim();
-        const pass = credentials.substring(credentials.lastIndexOf('| ') + 1, credentials.length).trim();
-        const credential = { user: user, pass: pass }
-
-        const browser = await puppeteer.launch({ headless: true });
-        const page = await browser.newPage();
-
-        await page.goto(pageLogin, { waitUntil: 'networkidle2' }).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const nameInput = '#vSIS_USUARIOID';
-        await page.type(nameInput, credential.user).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const passInput = '#vSIS_USUARIOSENHA'
-        await page.type(passInput, credential.pass).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const confirmButton = 'BTCONFIRMA'
-        await page.click(`input[name=${confirmButton}]`).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const result = await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
-            return '';
-        }).catch(async () => {
-            const resultId = 'span_vSAIDA';
-            const result = await page.waitForSelector(`#${resultId}`).then((res) => {
-                return res?.evaluate(val => val.querySelector('text')?.textContent);
-            }).catch(() => { });
-
-            return result ?? 'Problema com a conexão';
-        });
-
-        //In case of some error occurred
-        if (result) return res.status(400).json({ response: result });
-
-        await page.locator('.PopupHeaderButton').setTimeout(2000).click().catch(() => { });
+        const { user, pass } = req.headers;
+        const page: Page = res.locals.page;
 
         const raId = 'span_MPW0041vACD_ALUNOCURSOREGISTROACADEMICOCURSO';
         const ra = await page.waitForSelector(`#${raId}`).then((res) => {
@@ -74,58 +30,15 @@ export default class Data {
             return res?.evaluate(val => val.querySelector('img')?.getAttribute('src'));
         });
 
-        await browser.close();
+        // await browser.close();
 
         return res.status(200).json({ ra: ra ?? "", name: name ?? "", email: email ?? "", picture: image ?? "" });
     }
 
     static async getHistory(req: Request, res: Response) {
-        const { auth } = req.body;
-
-        if (!auth) return res.status(400).json({ error: "Preencha todos os campos" });
-
-        const credentials = decode(auth);
-
-        const user = credentials.substring(0, credentials.lastIndexOf(' | ')).trim();
-        const pass = credentials.substring(credentials.lastIndexOf('| ') + 1, credentials.length).trim();
-        const credential = { user: user, pass: pass }
-
-        const browser = await puppeteer.launch({ headless: true });
-        const page = await browser.newPage();
-
-        await page.goto(pageLogin, { waitUntil: 'networkidle2' }).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const nameInput = '#vSIS_USUARIOID';
-        await page.type(nameInput, credential.user).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const passInput = '#vSIS_USUARIOSENHA'
-        await page.type(passInput, credential.pass).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const confirmButton = 'BTCONFIRMA'
-        await page.click(`input[name=${confirmButton}]`).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const result = await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
-            return '';
-        }).catch(async () => {
-            const resultId = 'span_vSAIDA';
-            const result = await page.waitForSelector(`#${resultId}`).then((res) => {
-                return res?.evaluate(val => val.querySelector('text')?.textContent);
-            }).catch(() => { });
-
-            return result ?? 'Problema com a conexão';
-        });
-
-        if (result) return res.status(400).json({ response: result });
-
-        await page.locator('.PopupHeaderButton').setTimeout(2000).click().catch(() => { });
+        const { user, pass } = req.headers;
+        const page: Page = res.locals.page;
+        const browser: Browser = res.locals.browser;
 
         await page.goto(pageHistory, { waitUntil: 'networkidle2' });
 
@@ -135,57 +48,15 @@ export default class Data {
 
         const history = transformData(historyCompleteRaw ?? "", 'history');
 
+        browser.close();
+
         return res.status(200).json({ data: history });
     }
 
     static async getSchedule(req: Request, res: Response) {
-        const { auth } = req.body;
-
-        if (!auth) return res.status(400).json({ error: "Preencha todos os campos" });
-
-        const credentials = decode(auth);
-
-        const user = credentials.substring(0, credentials.lastIndexOf(' | ')).trim();
-        const pass = credentials.substring(credentials.lastIndexOf('| ') + 1, credentials.length).trim();
-        const credential = { user: user, pass: pass }
-
-        const browser = await puppeteer.launch({ headless: true });
-        const page = await browser.newPage();
-
-        await page.goto(pageLogin, { waitUntil: 'networkidle2' }).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const nameInput = '#vSIS_USUARIOID';
-        await page.type(nameInput, credential.user).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const passInput = '#vSIS_USUARIOSENHA'
-        await page.type(passInput, credential.pass).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const confirmButton = 'BTCONFIRMA'
-        await page.click(`input[name=${confirmButton}]`).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
-
-        const result = await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
-            return '';
-        }).catch(async () => {
-            const resultId = 'span_vSAIDA';
-            const result = await page.waitForSelector(`#${resultId}`).then((res) => {
-                return res?.evaluate(val => val.querySelector('text')?.textContent);
-            }).catch(() => { });
-
-            return result ?? 'Problema com a conexão';
-        });
-
-        //In case of some error occurred
-        if (result) return res.status(400).json({ response: result });
-
-        await page.locator('.PopupHeaderButton').setTimeout(2000).click().catch(() => { });
+        const { user, pass } = req.headers;
+        const page: Page = res.locals.page;
+        const browser: Browser = res.locals.browser;
 
         await page.goto(pageSchedule, { waitUntil: 'networkidle2' });
 
@@ -193,16 +64,29 @@ export default class Data {
             return res?.evaluate(val => val.value);
         }).catch(() => (''));
 
-        const scheduleContentRaw = await page.waitForSelector(`input[name=${globalContainerData(2)}]`, { hidden: true }).then((res) => {
-            return res?.evaluate(val => val.value);
-        }).catch(() => (''));
+        const scheduleHeader: ScheduleProps[] = transformData(scheduleHeaderRaw ?? "", 'scheduleHeader');
 
-        console.log(scheduleHeaderRaw);
-        console.log(scheduleContentRaw);
+        for (let i = 2; i <= 7; i++) {
+            const day = i == 2 ? "Segunda-Feira" : i == 3 ? "Terça-Feira" : i == 4 ? "Quarta-Feira" : i == 5 ? "Quinta-Feira" : i == 6 ? "Sexta-Feira" : "Sabado";
 
-        await browser.close();
+            const scheduleContentRaw = await page.waitForSelector(`input[name=${globalContainerData(i)}]`, { hidden: true }).then((res) => {
+                return res?.evaluate(val => val.value);
+            }).catch(() => (''));
 
-        return res.status(200).json({ data: scheduleHeaderRaw });
+            const scheduleContent: ScheduleClassProps[] = transformData(scheduleContentRaw ?? "", 'scheduleContent');
 
+            scheduleContent.forEach(item => {
+                scheduleHeader.forEach((header, index) => {
+                    if (header.sigla == item.sigla) {
+                        scheduleHeader[index].horario.push(item.horario);
+                        scheduleHeader[index].dia = day;
+                    }
+                });
+            });
+        }
+
+        browser.close();
+
+        return res.status(200).json({ data: scheduleHeader });
     }
 }
