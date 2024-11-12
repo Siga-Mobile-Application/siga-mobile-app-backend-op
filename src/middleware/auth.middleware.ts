@@ -4,8 +4,7 @@ import puppeteer from 'puppeteer';
 import { pageLogin } from '../constants';
 import { error } from 'console';
 
-export default async function authMiddleware
-    (req: Request, res: Response, next: NextFunction) {
+export default async function authMiddleware(req: Request, res: Response, next: NextFunction) {
     const { authorization } = req.headers;
 
     if (!authorization) return res.status(401).json({ error: 'Credenciais não informadas!' });
@@ -17,11 +16,12 @@ export default async function authMiddleware
 
     if (!user || !pass) return res.status(401).json({ error: 'Credenciais não informadas!' });
 
-    const browser = await puppeteer.launch({ headless: true });
+    const browser = await puppeteer.launch({ headless: "shell" });
     const page = await browser.newPage();
 
     try {
-        await page.goto(pageLogin, { waitUntil: 'networkidle2' }).catch(() => {
+        await page.goto(pageLogin, { waitUntil: 'networkidle2' }).catch((e) => {
+            console.log(e);
             res.status(400).json({ error: "Problema ao acessar o siga" });
         });
 
@@ -40,13 +40,15 @@ export default async function authMiddleware
             res.status(400).json({ error: "Problema ao acessar o siga" });
         });
 
-        const result = await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
+        const result = await page.waitForNavigation({ waitUntil: 'networkidle0' }).then(() => {
             return '';
         }).catch(async () => {
             const resultId = 'span_vSAIDA';
             const result = await page.waitForSelector(`#${resultId}`).then((res) => {
                 return res?.evaluate(val => val.querySelector('text')?.textContent);
-            }).catch(() => { });
+            }).catch(() => {
+                res.status(400).json({ error: "Problema ao acessar o siga" });
+            });
 
             return result ?? 'Problema com a conexão';
         });
@@ -54,7 +56,7 @@ export default async function authMiddleware
         if (result) return res.status(400).json({ error: result });
 
         await page.locator('.PopupHeaderButton').setTimeout(1000).click().catch(() => { });
-        
+
         req.headers.user = pass;
         req.headers.pass = user;
 
@@ -62,7 +64,7 @@ export default async function authMiddleware
         res.locals.browser = browser;
         next();
     } catch (err) {
-        res.status(500).json({ error: 'Erro ao realizar autenticação', details: err });
+        return;
     } finally {
     }
 }
