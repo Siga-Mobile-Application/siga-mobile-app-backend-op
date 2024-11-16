@@ -31,7 +31,7 @@ jobs:
         id: set-matrix-node
         working-directory: lambdas
         run: |
-          arr="["; for i in ${ls -d *}); do arr="$arr\"$i\","; done; arr="${arr::-1}]"
+          arr="["; for i in $(ls -d *); do arr="$arr\"$i\","; done; arr="${arr::-1}]"
           echo "matrix=$arr" >> $GITHUB_OUTPUT
 
   build-node:
