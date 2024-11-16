@@ -20,27 +20,123 @@ on:
         required: true
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix_node: ${{ steps.set-matrix-node.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: List node files
+        id: set-matrix-node
+        working-directory: lambdas
+        run: |
+          arr="["; for i in ${ls -d *}); do arr="$arr\"$i\","; done; arr="${arr::-1}]"
+          echo "matrix=$arr" >> $GITHUB_OUTPUT
+
+  build-node:
+    runs-on: ubuntu-latest
+    container:
+      image: node:slim
+    environment:
+      name: ${{ inputs.environment }}
+    needs: [setup]
+    strategy:
+      matrix:
+        lambdas: ${{ fromJson(needs.setup.outputs.matrix_node) }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Show environment
+        run: echo "Building for ${{ inputs.environment }}"
+
+      - name: Copy to build directory
+        run: |
+          mkdir -p build/lambdas
+          cp -r lambdas/${{ matrix.lambdas }} build/lambdas/${{ matrix.lambdas }}
+
+      - name: Install dependencies
+        working-directory: build/lambdas/${{ matrix.lambdas }}
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          else
+           echo "::error file=package.json,line=1,col=1::No package-lock.json found."
+           exit 1
+          fi
+
+      - name: Build TS
+        working-directory: build/lambdas/${{ matrix.lambdas }}
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            npm run build
+          else
+            echo "::error file=package.json,line=1,col=1::Typescript not configured."
+      
+      - name: Remove Dev Dependencies
+        working-directory: build/lambdas/${{ matrix.lambdas }}
+        run: npm ci --omit=dev
+
+      - name: Clear build directory
+        working-directory: build/lambdas/${{ matrix.lambdas }}
+        run: |
+          if [ -d "build" ]; then
+            ls -A | grep -v node-modules | grep -v build | xargs rm -rf
+            mv build/* .
+            rm -rf build
+          fi
+
+      - name: Setup dependencies
+        run: apt-get update && apt-get install zip wget -y
+
+      - name: Zip file
+        working-directory: build/lambdas/${{ matrix.lambdas }}
+        run: |
+          zip -r ${{ matrix.lambdas }}.zip *
+          cp ${{ matrix.lambdas }}.zip ../
+
+      - name: Clean up
+        run: rm -rf build/lambdas/${{ matrix.lambdas }}
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.lambdas }}
+          path: build
+
   terraform: 
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
-    
+    container:
+      image: hashicorp/terraform:1.8.3
+    needs: [setup, build-node]
+    environment: 
+      name: ${{ inputs.environment }}    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
         with:
-          terraform_version: 1.8.3
+          pattern: build-*
+          path: build
+          merge-multiple: true
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ inputs.aws-assume-role-arn }}
-          role-session-name: GitHub_to_AWS_via_FederatedOIDC
-          aws-region: ${{ inputs.aws-region }} 
+            role-to-assume: ${{ inputs.aws-assume-role-arn }}
+            role-session-name: GitHub_to_AWS_via_FederatedOIDC
+            aws-region: ${{ inputs.aws-region }} 
+
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v3
+      #   with:
+      #     terraform_version: 1.8.3
+
+      - name: Verify terraform version
+        working-directory: terraform
+        run: terraform --version
 
       - name: Read destroy configuration
         id: read-destroy-config
@@ -49,33 +145,38 @@ jobs:
           echo "destroy=$(echo $DESTROY)" >> $GITHUB_OUTPUT
       
       - name: Terraform Init
+        working-directory: terraform
         run: |
-          cd terraform && terraform init \
+          terraform init \
             -backend-config="bucket=${{ inputs.aws-statefile-s3-bucket }}" \
             -backend-config="key=${{ github.event.repository.name }}" \
             -backend-config="region=${{ inputs.aws-region }}" \
             -backend-config="dynamodb_table=${{ inputs.aws-lock-dynamodb-table }}"
 
       - name: Terraform Validate
+        working-directory: terraform
         run: terraform validate
 
       - name: Terraform Destroy
         if: steps.read-destroy-config.outputs.destroy == 'true'
+        working-directory: terraform
         id: terraform-destroy
-        run: cd infra &&
+        run:
           terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }} &&
           terraform destroy -var-file="./envs/${{ inputs.environment }}/terraform.tfvars" -auto-approve
 
       - name: Terraform Plan
         if: steps.read-destroy-config.outputs.destroy != 'true'
+        working-directory: terraform
         id: terraform-plan
-        run: cd terraform &&
+        run:
           terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }} &&
           terraform plan -var-file="./envs/${{ inputs.environment }}/terraform.tfvars" -out="${{ inputs.environment }}.plan"
 
       - name: Terraform Apply
         if: steps.read-destroy-config.outputs.destroy != 'true'
+        working-directory: terraform
         id: terraform-apply
-        run: cd terraform &&
+        run: 
           terraform workspace select ${{ inputs.environment }} || terraform workspace new ${{ inputs.environment }} &&
           terraform apply "${{ inputs.environment }}.plan"
