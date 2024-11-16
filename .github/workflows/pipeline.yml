@@ -72,6 +72,7 @@ jobs:
             npm run build
           else
             echo "::error file=package.json,line=1,col=1::Typescript not configured."
+          fi
       
       - name: Remove Dev Dependencies
         working-directory: build/lambdas/${{ matrix.lambdas }}
