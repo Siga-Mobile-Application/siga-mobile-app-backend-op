@@ -110,6 +110,9 @@ jobs:
     container:
       image: hashicorp/terraform:1.8.3
     needs: [setup, build-node]
+    defaults:
+      run:
+        shell: bash 
     environment: 
       name: ${{ inputs.environment }}    
     steps:
@@ -138,9 +141,6 @@ jobs:
       - name: Verify terraform version
         working-directory: terraform
         run: terraform --version
-
-      - name: Install jq
-        run: apt-get update && apt-get install -y jq
 
       - name: Read destroy configuration
         id: read-destroy-config
