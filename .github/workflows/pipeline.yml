@@ -139,12 +139,15 @@ jobs:
         working-directory: terraform
         run: terraform --version
 
+      - name: Install jq
+        run: apt-get update && apt-get install -y jq
+
       - name: Read destroy configuration
         id: read-destroy-config
         run: |
           DESTROY="$(jq -r '.${{ inputs.environment }}' ./terraform/destroy_config.json)"
           echo "destroy=$(echo $DESTROY)" >> $GITHUB_OUTPUT
-      
+
       - name: Terraform Init
         working-directory: terraform
         run: |
