@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from 'express'
 import { decode } from '../helper/auth';
 import puppeteer from 'puppeteer';
 import { pageLogin } from '../constants';
-import { error } from 'console';
 
 export default async function authMiddleware(req: Request, res: Response, next: NextFunction) {
     const { authorization } = req.headers;
@@ -40,7 +39,7 @@ export default async function authMiddleware(req: Request, res: Response, next: 
             res.status(400).json({ error: "Problema ao acessar o siga" });
         });
 
-        const result = await page.waitForNavigation({ waitUntil: 'networkidle0' }).then(() => {
+        const result = await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
             return '';
         }).catch(async () => {
             const resultId = 'span_vSAIDA';
