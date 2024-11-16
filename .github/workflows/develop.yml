@@ -2,8 +2,6 @@ name: "DEV DEPLOY"
 
 on:
     push:
-        branches:
-            - '*'
         branches-ignore:
             - 'main'
             - 'qual'
