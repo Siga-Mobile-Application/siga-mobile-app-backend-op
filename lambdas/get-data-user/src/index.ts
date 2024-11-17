@@ -10,9 +10,10 @@ import Chromium = require("@sparticuz/chromium");
 
 async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const { authorization } = event.headers;
+    const options = ['', 'grade', 'history', 'schedule'];
     const action = event.pathParameters?.action;
 
-    if (!action) return { statusCode: 400, body: JSON.stringify({ error: "Nenhuma função especificada" }) };
+    if (!action || !options.includes(action)) return { statusCode: 400, body: JSON.stringify({ error: "Nenhuma função especificada" }) };
 
     if (!authorization) return {
         statusCode: 401,
@@ -98,161 +99,152 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         // res.locals.page = page;
         // res.locals.browser = browser;
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ error: "Acesso ao siga!" })
+
+        let response;
+
+        switch (action) {
+            case 'grade':
+                response = Data.getGrade(page);
+                break;
+            case 'history':
+                response = Data.getHistory(page);
+                break;
+            case 'schedule':
+                response = Data.getSchedule(page);
+                break;
+            default:
+                response = Data.getAll(page);
+                break;
         }
+
+        return response;
     } catch (err) {
         return {
             statusCode: 500,
             body: JSON.stringify({ error: "Problema ao acessar o siga", detail: JSON.stringify(err) })
         }
     } finally {
-
+        await browser.close();
     }
 }
 
-// class Data {
-//     static async getAll(user: string, pass: string, page: Page, browser: Browser) {
-//         const dataRaw = await page.waitForSelector(`input[name=${globalAllInfo}]`, { hidden: true }).then((res) => {
-//             return res?.evaluate(val => val.value);
-//         }).catch(() => (''));
+class Data {
+    static async getAll(page: Page) {
+        try {
+            const dataRaw = await page.waitForSelector(`input[name=${globalAllInfo}]`, { hidden: true }).then((res) => {
+                if (res) return res.evaluate(val => val.value);
+                throw "Não foi possível resgatar os dados";
+            });
 
-//         if (!dataRaw) return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
+            const student: StudentDataProps = JSON.parse(`${dataRaw.substring(0, dataRaw.indexOf(',"vEMAILWEBSAI"'))}}`);
 
-//         try {
-//             const student: StudentDataProps = JSON.parse(`${dataRaw.substring(0, dataRaw.indexOf(',"vEMAILWEBSAI"'))}}`);
+            const imageId = 'MPW0041FOTO'
+            const image = await page.waitForSelector(`div #${imageId}`).then((res) => {
+                return res?.evaluate(val => val.querySelector('img')?.getAttribute('src'));
+            });
 
-//             const imageId = 'MPW0041FOTO'
-//             const image = await page.waitForSelector(`div #${imageId}`).then((res) => {
-//                 return res?.evaluate(val => val.querySelector('img')?.getAttribute('src'));
-//             });
+            return JSON.stringify(
+                {
+                    statusCode: 200,
+                    body: {
+                        ra: student.MPW0041vACD_ALUNOCURSOREGISTROACADEMICOCURSO,
+                        nome: student.vPRO_PESSOALNOME.split('-')[0],
+                        email: student.MPW0041vINSTITUCIONALFATEC,
+                        situacao: student.vSITUACAO_MPAGE,
+                        periodo: student.vACD_PERIODODESCRICAO_MPAGE,
+                        curso: student.vACD_CURSONOME_MPAGE,
+                        unidade: student.vUNI_UNIDADENOME_MPAGE,
+                        semestre: student.MPW0041vACD_ALUNOCURSOCICLOATUAL,
+                        pp: student.MPW0041vACD_ALUNOCURSOINDICEPP,
+                        pr: student.MPW0041vACD_ALUNOCURSOINDICEPR,
+                        semestre_cursado: student.MPW0041vSEMESTRESCURSADOS,
+                        semestre_maximo: student.MPW0041vINTEGRALIZACAOMAX,
+                        semestre_restante: student.MPW0041vFALTA,
+                        picture: image ?? ""
+                    }
+                });
 
-//             await browser.close();
+        } catch (error) {
+            console.log(error);
+            return JSON.stringify({ statusCode: 400, error: 'Não foi possível resgatar os dados' });
+        }
+    }
 
-//             return res.status(200).json({
-//                 ra: student.MPW0041vACD_ALUNOCURSOREGISTROACADEMICOCURSO,
-//                 nome: student.vPRO_PESSOALNOME.split('-')[0],
-//                 email: student.MPW0041vINSTITUCIONALFATEC,
-//                 situacao: student.vSITUACAO_MPAGE,
-//                 periodo: student.vACD_PERIODODESCRICAO_MPAGE,
-//                 curso: student.vACD_CURSONOME_MPAGE,
-//                 unidade: student.vUNI_UNIDADENOME_MPAGE,
-//                 semestre: student.MPW0041vACD_ALUNOCURSOCICLOATUAL,
-//                 pp: student.MPW0041vACD_ALUNOCURSOINDICEPP,
-//                 pr: student.MPW0041vACD_ALUNOCURSOINDICEPR,
-//                 semestre_cursado: student.MPW0041vSEMESTRESCURSADOS,
-//                 semestre_maximo: student.MPW0041vINTEGRALIZACAOMAX,
-//                 semestre_restante: student.MPW0041vFALTA,
-//                 picture: image ?? ""
-//             });
-//         } catch (error) {
-//             console.log(error);
-//             return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
-//         } finally {
-//             browser.close();
-//         }
-//     }
+    static async getHistory(page: Page) {
+        try {
+            await page.goto(pageHistory, { waitUntil: 'networkidle2' });
 
-//     static async getHistory(req: Request, res: Response) {
-//         const { user, pass } = req.headers;
-//         const page: Page = res.locals.page;
-//         const browser: Browser = res.locals.browser;
+            const dataRaw = await page.waitForSelector(`input[name=${globalAllInfo}]`, { hidden: true }).then((res) => {
+                if (res) return res.evaluate(val => val.value);
+                throw "Não foi possível resgatar os dados";
+            });
 
-//         try {
-//             await page.goto(pageHistory, { waitUntil: 'networkidle2' });
+            const data = dataRaw.substring(dataRaw.indexOf('[{"ACD_AlunoId'), dataRaw.lastIndexOf(']') + 1);
 
-//             const dataRaw = await page.waitForSelector(`input[name=${globalAllInfo}]`, { hidden: true }).then((res) => {
-//                 return res?.evaluate(val => val.value);
-//             }).catch(() => (''));
+            const history = transformData(data ?? "", 'history');
 
-//             if (!dataRaw) return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
+            return JSON.stringify({ statusCode: 200, body: { data: history } });
 
-//             const data = dataRaw.substring(dataRaw.indexOf('[{"ACD_AlunoId'), dataRaw.lastIndexOf(']') + 1);
+        } catch (error) {
+            return JSON.stringify({ statusCode: 400, error: 'Não foi possível resgatar os dados' });
+        }
+    }
 
-//             const history = transformData(data ?? "", 'history');
+    static async getSchedule(page: Page) {
+        try {
+            await page.goto(pageSchedule, { waitUntil: 'networkidle2' });
 
-//             return res.status(200).json({ data: history });
+            const scheduleHeaderRaw = await page.waitForSelector(`input[name=${globalContainerData()}]`, { hidden: true }).then((res) => {
+                if (res) return res.evaluate(val => val.value);
+                throw "Não foi possível resgatar os dados";
+            });
 
-//         } catch (error) {
-//             return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
-//         } finally {
-//             browser.close();
-//         }
-//     }
+            const scheduleHeader: ScheduleProps[] = transformData(scheduleHeaderRaw, 'scheduleHeader');
 
-//     static async getSchedule(req: Request, res: Response) {
-//         const { user, pass } = req.headers;
-//         const page: Page = res.locals.page;
-//         const browser: Browser = res.locals.browser;
+            for (let i = 2; i <= 7; i++) {
+                const day = i == 2 ? "Segunda-Feira" : i == 3 ? "Terça-Feira" : i == 4 ? "Quarta-Feira" : i == 5 ? "Quinta-Feira" : i == 6 ? "Sexta-Feira" : "Sabado";
 
-//         try {
+                const scheduleContentRaw = await page.waitForSelector(`input[name=${globalContainerData(i)}]`, { hidden: true }).then((res) => {
+                    return res?.evaluate(val => val.value);
+                }).catch(() => (''));
 
-//             await page.goto(pageSchedule, { waitUntil: 'networkidle2' });
+                const scheduleContent: ScheduleClassProps[] = transformData(scheduleContentRaw ?? "", 'scheduleContent');
 
-//             const scheduleHeaderRaw = await page.waitForSelector(`input[name=${globalContainerData()}]`, { hidden: true }).then((res) => {
-//                 return res?.evaluate(val => val.value);
-//             }).catch(() => (''));
+                scheduleContent.forEach(item => {
+                    scheduleHeader.forEach((header, index) => {
+                        if (header.sigla == item.sigla) {
+                            scheduleHeader[index].horario.push(item.horario);
+                            scheduleHeader[index].dia = day;
+                        }
+                    });
+                });
+            }
 
-//             if (!scheduleHeaderRaw) return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
+            return JSON.stringify({ statusCode: 200, body: { data: scheduleHeader } });
+        } catch (error) {
+            return JSON.stringify({ statusCode: 400, error: 'Não foi possível resgatar os dados' });
+        }
+    }
 
-//             const scheduleHeader: ScheduleProps[] = transformData(scheduleHeaderRaw, 'scheduleHeader');
+    static async getGrade(page: Page) {
+        try {
+            await page.goto(pageGrades, { waitUntil: 'networkidle2' });
 
-//             for (let i = 2; i <= 7; i++) {
-//                 const day = i == 2 ? "Segunda-Feira" : i == 3 ? "Terça-Feira" : i == 4 ? "Quarta-Feira" : i == 5 ? "Quinta-Feira" : i == 6 ? "Sexta-Feira" : "Sabado";
+            const dataRaw = await page.waitForSelector(`input[name=${globalAllInfo}]`, { hidden: true }).then((res) => {
+                if (res) return res.evaluate(val => val.value);
+                throw "Não foi possível resgatar os dados";
+            });
 
-//                 const scheduleContentRaw = await page.waitForSelector(`input[name=${globalContainerData(i)}]`, { hidden: true }).then((res) => {
-//                     return res?.evaluate(val => val.value);
-//                 }).catch(() => (''));
+            const objectName = '"vACD_ALUNONOTASPARCIAISRESUMO_SDT":';
+            const data = dataRaw.substring(dataRaw.indexOf(objectName) + objectName.length, dataRaw.lastIndexOf('}]') + 2);
 
-//                 const scheduleContent: ScheduleClassProps[] = transformData(scheduleContentRaw ?? "", 'scheduleContent');
+            const grades = transformData(data, 'grades');
 
-//                 scheduleContent.forEach(item => {
-//                     scheduleHeader.forEach((header, index) => {
-//                         if (header.sigla == item.sigla) {
-//                             scheduleHeader[index].horario.push(item.horario);
-//                             scheduleHeader[index].dia = day;
-//                         }
-//                     });
-//                 });
-//             }
-
-
-//             return res.status(200).json({ data: scheduleHeader });
-//         } catch (error) {
-//             return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
-//         } finally {
-//             browser.close();
-//         }
-//     }
-
-//     static async getGrade(req: Request, res: Response) {
-//         const { user, pass } = req.headers;
-//         const page: Page = res.locals.page;
-//         const browser: Browser = res.locals.browser;
-
-//         try {
-//             await page.goto(pageGrades, { waitUntil: 'networkidle2' });
-
-//             const dataRaw = await page.waitForSelector(`input[name=${globalAllInfo}]`, { hidden: true }).then((res) => {
-//                 return res?.evaluate(val => val.value);
-//             }).catch(() => (''));
-
-//             if (!dataRaw) return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
-
-//             const objectName = '"vACD_ALUNONOTASPARCIAISRESUMO_SDT":';
-//             const data = dataRaw.substring(dataRaw.indexOf(objectName) + objectName.length, dataRaw.lastIndexOf('}]') + 2);
-
-//             const grades = transformData(data, 'grades');
-
-//             return res.status(200).json({ data: grades });
-//         } catch (error) {
-//             return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
-//         } finally {
-//             browser.close();
-//         }
-//     }
-// }
-
+            return JSON.stringify({ statusCode: 200, body: { data: grades } });
+        } catch (error) {
+            return JSON.stringify({ statusCode: 400, error: 'Não foi possível resgatar os dados' });
+        }
+    }
+}
 
 module.exports.handler = handler;
