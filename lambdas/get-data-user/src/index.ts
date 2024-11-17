@@ -1,14 +1,14 @@
-import puppeteer, { Browser, Page } from "puppeteer";
+import puppeteer, { Browser, Page } from "puppeteer-core";
 import { transformData } from './helper/transformData';
 import { globalContainerData, pageHistory, pageSchedule, pageLogin, pageGrades, globalAllInfo } from './constants';
 import { ScheduleClassProps, ScheduleProps } from './interfaces/schedule';
 import { StudentDataProps } from './interfaces/student';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { decode } from './helper/auth';
-import Chromium from '@sparticuz/chromium';
 
 async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const { authorization } = event.headers;
+    const chromium = require('chrome-aws-lambda');
 
     if (!authorization) return {
         statusCode: 401,
@@ -27,12 +27,10 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
     try {
         const browser = await puppeteer.launch({
-            args: Chromium.args,
-            defaultViewport: Chromium.defaultViewport,
-            executablePath: await Chromium.executablePath(
-                './node_modules/@sparticuz/chromium/bin'
-            ),
-            headless: Chromium.headless
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath,
+            headless: chromium.headless,
         });
 
         const page = await browser.newPage();
@@ -90,7 +88,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             body: JSON.stringify({ error: result })
         }
 
-        await page.locator('.PopupHeaderButton').setTimeout(1000).click().catch(() => { });
+        await page.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch());
 
 
 

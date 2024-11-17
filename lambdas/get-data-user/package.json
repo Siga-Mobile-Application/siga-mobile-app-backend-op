@@ -10,15 +10,13 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@sparticuz/chromium": "^131.0.0",
     "bcrypt": "^5.1.1",
-    "express": "^4.19.2",
-    "puppeteer": "^23.2.1"
+    "chrome-aws-lambda": "^10.1.0",
+    "puppeteer-core": "10.1.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",
     "@types/bcrypt": "^5.0.2",
-    "@types/express": "^4.17.21",
     "@types/node": "^20.11.25",
     "nodemon": "^3.1.4",
     "ts-node-dev": "^2.0.0",
