@@ -16,7 +16,7 @@ resource "aws_lambda_function" "get_data_user" {
   function_name    = "${local.app_name}-${var.environment}-get-data"
   role             = data.aws_iam_role.lambda-role.arn
   handler          = "index.handler"
-  runtime          = "nodejs18.x"
+  runtime          = "nodejs20.x"
   timeout          = 30
   memory_size      = 512
 }
