@@ -140,30 +140,29 @@ class Data {
                 return res?.evaluate(val => val.querySelector('img')?.getAttribute('src'));
             });
 
-            return JSON.stringify(
-                {
-                    statusCode: 200,
-                    body: {
-                        ra: student.MPW0041vACD_ALUNOCURSOREGISTROACADEMICOCURSO,
-                        nome: student.vPRO_PESSOALNOME.split('-')[0],
-                        email: student.MPW0041vINSTITUCIONALFATEC,
-                        situacao: student.vSITUACAO_MPAGE,
-                        periodo: student.vACD_PERIODODESCRICAO_MPAGE,
-                        curso: student.vACD_CURSONOME_MPAGE,
-                        unidade: student.vUNI_UNIDADENOME_MPAGE,
-                        semestre: student.MPW0041vACD_ALUNOCURSOCICLOATUAL,
-                        pp: student.MPW0041vACD_ALUNOCURSOINDICEPP,
-                        pr: student.MPW0041vACD_ALUNOCURSOINDICEPR,
-                        semestre_cursado: student.MPW0041vSEMESTRESCURSADOS,
-                        semestre_maximo: student.MPW0041vINTEGRALIZACAOMAX,
-                        semestre_restante: student.MPW0041vFALTA,
-                        picture: image ?? ""
-                    }
-                });
+            return {
+                statusCode: 200,
+                body: JSON.stringify({
+                    ra: student.MPW0041vACD_ALUNOCURSOREGISTROACADEMICOCURSO,
+                    nome: student.vPRO_PESSOALNOME.split('-')[0],
+                    email: student.MPW0041vINSTITUCIONALFATEC,
+                    situacao: student.vSITUACAO_MPAGE,
+                    periodo: student.vACD_PERIODODESCRICAO_MPAGE,
+                    curso: student.vACD_CURSONOME_MPAGE,
+                    unidade: student.vUNI_UNIDADENOME_MPAGE,
+                    semestre: student.MPW0041vACD_ALUNOCURSOCICLOATUAL,
+                    pp: student.MPW0041vACD_ALUNOCURSOINDICEPP,
+                    pr: student.MPW0041vACD_ALUNOCURSOINDICEPR,
+                    semestre_cursado: student.MPW0041vSEMESTRESCURSADOS,
+                    semestre_maximo: student.MPW0041vINTEGRALIZACAOMAX,
+                    semestre_restante: student.MPW0041vFALTA,
+                    picture: image ?? ""
+                })
+            };
 
         } catch (error) {
             console.log(error);
-            return JSON.stringify({ statusCode: 400, error: 'Não foi possível resgatar os dados' });
+            return { statusCode: 400, body: JSON.stringify({ error: 'Não foi possível resgatar os dados' }) };
         }
     }
 
@@ -180,10 +179,10 @@ class Data {
 
             const history = transformData(data ?? "", 'history');
 
-            return JSON.stringify({ statusCode: 200, body: { data: history } });
+            return { statusCode: 200, body: JSON.stringify({ data: history }) };
 
         } catch (error) {
-            return JSON.stringify({ statusCode: 400, error: 'Não foi possível resgatar os dados' });
+            return { statusCode: 400, body: JSON.stringify({ error: 'Não foi possível resgatar os dados' }) };
         }
     }
 
@@ -217,9 +216,9 @@ class Data {
                 });
             }
 
-            return JSON.stringify({ statusCode: 200, body: { data: scheduleHeader } });
+            return { statusCode: 200, body: JSON.stringify({ data: scheduleHeader }) };
         } catch (error) {
-            return JSON.stringify({ statusCode: 400, error: 'Não foi possível resgatar os dados' });
+            return { statusCode: 400, body: JSON.stringify({ error: 'Não foi possível resgatar os dados' }) };
         }
     }
 
@@ -237,9 +236,9 @@ class Data {
 
             const grades = transformData(data, 'grades');
 
-            return JSON.stringify({ statusCode: 200, body: { data: grades } });
+            return { statusCode: 200, body: JSON.stringify({ data: grades }) };
         } catch (error) {
-            return JSON.stringify({ statusCode: 400, error: 'Não foi possível resgatar os dados' });
+            return { statusCode: 400, body: JSON.stringify({ error: 'Não foi possível resgatar os dados' }) };
         }
     }
 }
