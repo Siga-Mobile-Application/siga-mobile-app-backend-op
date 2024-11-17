@@ -10,6 +10,8 @@ import chromium from '@sparticuz/chromium-min';
 async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const { authorization } = event.headers;
     const params = event.pathParameters;
+    
+    if(params) return {body: JSON.stringify(params)};
 
     console.log(params);
 
