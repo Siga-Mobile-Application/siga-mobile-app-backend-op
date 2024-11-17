@@ -33,7 +33,7 @@ resource "aws_apigatewayv2_integration" "get_data_user" {
 
   integration_uri    = aws_lambda_function.get_data_user.invoke_arn
   integration_type   = "AWS_PROXY"
-  integration_method = "GET"
+  integration_method = "POST"
 }
 
 resource "aws_apigatewayv2_route" "get_data_user" {
