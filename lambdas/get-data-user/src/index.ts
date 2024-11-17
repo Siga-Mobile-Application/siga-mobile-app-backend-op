@@ -38,12 +38,17 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
                 message = 'launch';
             });
 
+        console.log('Connected to browser...');
+
         if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
 
         const page = await browser!.newPage()
             .catch((e) => {
                 message = 'page';
             });
+        
+            console.log('New page...');
+
 
         if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
 
@@ -51,6 +56,9 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             .catch((e) => {
                 message = e.message;
             });
+
+            console.log('Going to siga...');
+
 
         if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
 
