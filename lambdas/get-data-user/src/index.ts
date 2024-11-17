@@ -67,13 +67,13 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         await page.click(`input[name=${confirmButton}]`);
 
         console.log('Going to home page...');
-        const result = await page!.waitForNavigation({ waitUntil: 'networkidle0', timeout: 7000 }).then(() => {
+        const result = await page!.waitForNavigation({ waitUntil: 'networkidle2', timeout: 7000 }).then(() => {
             return '';
         }).catch(async () => {
             const resultId = 'span_vSAIDA';
             const result = await page.waitForSelector(`#${resultId}`, { timeout: 3000 }).then((res) => {
                 return res?.evaluate(val => val.querySelector('text')?.textContent);
-            });
+            }).catch(() => {});
 
             return result ?? 'Problema com a conexão';
         });
