@@ -11,7 +11,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
     const { authorization } = event.headers;
     const params = event.pathParameters;
 
-    if (params) return { body: JSON.stringify({ params }) };
+    if (params) return { statusCode: 200, body: JSON.stringify({ params }) };
 
     console.log(params);
 
