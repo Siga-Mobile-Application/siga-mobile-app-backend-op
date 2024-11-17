@@ -44,7 +44,8 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         console.log('New page...');
 
-        await page.goto("https://example.com");
+        await page.goto("https://www.facebook.com/", { waitUntil: "networkidle2" });
+
         const pageTitle = await page.title();
 
         if (message) return { statusCode: 200, body: JSON.stringify({ title: pageTitle }) };
