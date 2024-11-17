@@ -10,9 +10,9 @@
     "build": "tsc"
   },
   "dependencies": {
-    "@sparticuz/chromium": "^109.0.5",
+    "@sparticuz/chromium": "^131.0.6778.69",
     "bcrypt": "^5.1.1",
-    "puppeteer-core": "^19.4.0"
+    "puppeteer-core": "^23.8.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",
