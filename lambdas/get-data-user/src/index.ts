@@ -53,16 +53,21 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         await page.goto(pageLogin, { waitUntil: 'networkidle2' });
 
+        console.log('Input user id...');
+
         const nameInput = '#vSIS_USUARIOID';
         await page!.type(nameInput, user);
 
+        console.log('Input user pass...');
         const passInput = '#vSIS_USUARIOSENHA'
         await page.type(passInput, pass);
 
+        console.log('Click confirm button...');
         const confirmButton = 'BTCONFIRMA'
         await page.click(`input[name=${confirmButton}]`);
 
-        const result = await page!.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
+        console.log('Going to home page...');
+        const result = await page!.waitForNavigation({ waitUntil: 'networkidle0', timeout: 7000 }).then(() => {
             return '';
         }).catch(async () => {
             const resultId = 'span_vSAIDA';
