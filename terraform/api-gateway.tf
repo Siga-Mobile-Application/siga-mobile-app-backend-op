@@ -39,8 +39,12 @@ resource "aws_apigatewayv2_integration" "get_data_user" {
 resource "aws_apigatewayv2_route" "get_data_user" {
   api_id = aws_apigatewayv2_api.apigateway-lambda.id
 
-  route_key = "GET /data/{action}"
+  route_key = "GET /data"
   target    = "integrations/${aws_apigatewayv2_integration.get_data_user.id}"
+  request_parameter {
+    request_parameter_key = "action"
+    required = true
+  }
 }
 
 resource "aws_cloudwatch_log_group" "api_log_group" {
