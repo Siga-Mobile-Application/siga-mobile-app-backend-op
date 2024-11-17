@@ -32,7 +32,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             args: Chromium.args,
             defaultViewport: Chromium.defaultViewport,
             executablePath: await Chromium.executablePath('https://github.com/Sparticuz/chromium/releases/download/v131.0./chromium-v131.0.0-pack.tar'),
-            headless: "shell",
+            headless: Chromium.headless,
         })
         .catch((e) => {
             message = 'launch';
