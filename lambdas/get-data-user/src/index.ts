@@ -91,7 +91,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             body: JSON.stringify({ error: result })
         }
 
-        await page.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch()).catch();
+        await page.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch(() => { })).catch(() => { });
 
         // req.headers.user = pass;
         // req.headers.pass = user;
