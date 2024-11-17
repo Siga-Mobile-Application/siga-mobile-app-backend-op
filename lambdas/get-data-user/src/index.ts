@@ -104,7 +104,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
     } catch (err) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: "Problema ao acessar o siga" })
+            body: JSON.stringify({ error: "Problema ao acessar o siga", err })
         }
     }
 }
