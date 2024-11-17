@@ -26,16 +26,15 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         body: JSON.stringify({ error: "Credenciais não informadas!" })
     }
 
-    const browser = await puppeteer.launch({ 
+    const browser = await puppeteer.launch({
         args: Chromium.args,
         defaultViewport: Chromium.defaultViewport,
         executablePath: await Chromium.executablePath(
-            process.env.AWS_EXECUTION_ENV 
-            ? './node_modules/@sparticuz/chromium/bin'
-            : undefined,
+            './node_modules/@sparticuz/chromium/bin'
         ),
         headless: Chromium.headless
-     });
+    });
+
     const page = await browser.newPage();
 
     try {
