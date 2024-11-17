@@ -53,9 +53,9 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         await page.goto(pageLogin, { waitUntil: 'networkidle2' });
 
-        const title = await page.title();
+        const title_login = await page.title();
 
-        if (title) console.log('Title: ' + title);
+        if (title_login) console.log('Title: ' + title_login);
 
         console.log('Input user id...');
 
@@ -71,6 +71,11 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         await page.click(`input[name=${confirmButton}]`);
 
         console.log('Going to home page...');
+
+        const title_home = await page.title();
+
+        if (title_home) console.log('Title: ' + title_home);
+
         const result = await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 7000 }).then(() => {
             return '';
         }).catch(async () => {
