@@ -18,5 +18,5 @@ resource "aws_lambda_function" "get_data_user" {
   handler          = "index.handler"
   runtime          = "nodejs18.x"
   timeout          = 30
-  memory_size      = 256
+  memory_size      = 512
 }
