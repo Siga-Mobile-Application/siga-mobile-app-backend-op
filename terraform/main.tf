@@ -17,6 +17,6 @@ data "aws_iam_role" "lambda-role" {
   name = "siga-app-lambda-role"
 }
 
-data "aws_iam_rola" "apigateway-role" {
+data "aws_iam_role" "apigateway-role" {
   name = "siga-app-api-gateway"
 }

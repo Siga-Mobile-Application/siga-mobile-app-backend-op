@@ -17,6 +17,6 @@ resource "aws_lambda_function" "get_data_user" {
   role             = data.aws_iam_role.lambda-role.arn
   handler          = "index.handler"
   runtime          = "nodejs20.x"
-  timeout = 30
-  memory_size = 256
+  timeout          = 30
+  memory_size      = 256
 }
