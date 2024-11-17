@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "bucket" {
   bucket = var.bucket_name
-  for_each = true
+  force_destroy = true
 }
 
 resource "aws_s3_object" "dist" {
