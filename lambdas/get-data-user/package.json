@@ -12,9 +12,10 @@
   "dependencies": {
     "@sparticuz/chromium": "^131.0.0",
     "bcrypt": "^5.1.1",
-    "puppeteer-core": "^23.8.0"
+    "puppeteer-core": "^21.5.0"
   },
   "devDependencies": {
+    "@sparticuz/chromium-min": "^119.0.2",
     "@types/aws-lambda": "^8.10.145",
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^20.11.25",

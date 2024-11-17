@@ -5,7 +5,7 @@ import { ScheduleClassProps, ScheduleProps } from './interfaces/schedule';
 import { StudentDataProps } from './interfaces/student';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { decode } from './helper/auth';
-import Chromium from "@sparticuz/chromium";
+import chromium from '@sparticuz/chromium-min';
 
 async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const { authorization } = event.headers;
@@ -29,14 +29,14 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         let message;
 
         const browser = await puppeteer.launch({
-            args: Chromium.args,
-            defaultViewport: Chromium.defaultViewport,
-            executablePath: await Chromium.executablePath('https://github.com/Sparticuz/chromium/releases/download/v131.0./chromium-v131.0.0-pack.tar'),
-            headless: Chromium.headless,
+            args: chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: await chromium.executablePath('https://github.com/Sparticuz/chromium/releases/download/v131.0./chromium-v131.0.0-pack.tar'),
+            headless: chromium.headless,
         })
-        .catch((e) => {
-            message = 'launch';
-        });
+            .catch((e) => {
+                message = 'launch';
+            });
 
         if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
 
