@@ -1,15 +1,14 @@
 {
   "name": "siga-mobile-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "",
+  "author": "Carlos Eduardo Fiori dos Santos",
+  "license": "ISC",
+  "type": "commonjs",
   "scripts": {
     "dev": "nodemon --exec ts-node-dev src/server.ts",
     "build": "tsc"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "express": "^4.19.2",
