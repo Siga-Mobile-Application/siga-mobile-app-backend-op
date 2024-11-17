@@ -10,8 +10,8 @@ import chromium from '@sparticuz/chromium-min';
 async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const { authorization } = event.headers;
     const params = event.pathParameters;
-    
-    if(params) return {body: JSON.stringify(params)};
+
+    if (params) return { body: JSON.stringify({ params }) };
 
     console.log(params);
 
@@ -51,8 +51,8 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             .catch((e) => {
                 message = 'page';
             });
-        
-            console.log('New page...');
+
+        console.log('New page...');
 
 
         if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
@@ -62,7 +62,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
                 message = e.message;
             });
 
-            console.log('Going to siga...');
+        console.log('Going to siga...');
 
 
         if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
