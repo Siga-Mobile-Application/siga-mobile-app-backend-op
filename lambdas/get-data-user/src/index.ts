@@ -29,60 +29,44 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         body: JSON.stringify({ error: "Credenciais não informadas!" })
     }
 
+    const browser_path = await Chromium.executablePath();
+
+    if (!browser_path) throw "Não foi possível concluir a solicitação";
+
+    console.log('Connected to browser...');
+
+    const browser = await puppeteer.launch({
+        args: chromium_min.args,
+        defaultViewport: chromium_min.defaultViewport,
+        executablePath: await chromium_min.executablePath(browser_path),//'https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar'),
+        headless: chromium_min.headless,
+    }).catch(() => { });
+
+    if (!browser) return { statusCode: 500, body: JSON.stringify({ error: "Problema ao acessar o siga" }) };
+
     try {
-        let message;
-
-        const browser_path = await Chromium.executablePath();
-
-        if(!browser_path) throw "Não foi possível concluir a solicitação";
-
-        const browser = await puppeteer.launch({
-            args: chromium_min.args,
-            defaultViewport: chromium_min.defaultViewport,
-            executablePath: await chromium_min.executablePath(browser_path),//'https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar'),
-            headless: chromium_min.headless,
-        });
-
-        console.log('Connected to browser...');
+        console.log('New page...');
 
         const page = await browser.newPage();
 
-        console.log('New page...');
-
-        await page.goto("https://www.facebook.com/", { waitUntil: "networkidle2" });
-
-        const pageTitle = await page.title();
-
-        if (pageTitle) return { statusCode: 200, body: JSON.stringify({ title: pageTitle }) };
-
-        await browser.close();
-
-        if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
-
-        await page!.goto(pageLogin, { waitUntil: 'networkidle2' })
-            .catch((e) => {
-                message = e.message;
-            });
-
         console.log('Going to siga...');
 
-
-        if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
+        await page.goto(pageLogin, { waitUntil: 'networkidle2' });
 
         const nameInput = '#vSIS_USUARIOID';
         await page!.type(nameInput, user);
 
         const passInput = '#vSIS_USUARIOSENHA'
-        await page!.type(passInput, pass);
+        await page.type(passInput, pass);
 
         const confirmButton = 'BTCONFIRMA'
-        await page!.click(`input[name=${confirmButton}]`);
+        await page.click(`input[name=${confirmButton}]`);
 
         const result = await page!.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
             return '';
         }).catch(async () => {
             const resultId = 'span_vSAIDA';
-            const result = await page!.waitForSelector(`#${resultId}`, { timeout: 3000 }).then((res) => {
+            const result = await page.waitForSelector(`#${resultId}`, { timeout: 3000 }).then((res) => {
                 return res?.evaluate(val => val.querySelector('text')?.textContent);
             });
 
@@ -94,7 +78,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             body: JSON.stringify({ error: result })
         }
 
-        await page!.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch());
+        await page.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch());
 
         // req.headers.user = pass;
         // req.headers.pass = user;
@@ -110,6 +94,8 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             statusCode: 400,
             body: JSON.stringify({ error: "Problema ao acessar o siga" })
         }
+    } finally {
+
     }
 }
 
