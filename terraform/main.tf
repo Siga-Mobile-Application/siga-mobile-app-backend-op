@@ -16,3 +16,7 @@ resource "aws_s3_object" "dist" {
 data "aws_iam_role" "lambda-role" {
   name = "siga-app-lambda-role"
 }
+
+data "aws_iam_rola" "apigateway-role" {
+  name = "siga-app-api-gateway"
+}
