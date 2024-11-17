@@ -76,7 +76,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         if (title_home) console.log('Title: ' + title_home);
 
-        const result = await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 7000 }).then(() => {
+        const result = await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 15000 }).then(() => {
             return '';
         }).catch(async () => {
             const resultId = 'span_vSAIDA';
