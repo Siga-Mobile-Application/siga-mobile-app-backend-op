@@ -10,7 +10,7 @@ import Chromium = require("@sparticuz/chromium");
 
 async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const { authorization } = event.headers;
-    const options = ['', 'grade', 'history', 'schedule'];
+    const options = ['basic', 'grade', 'history', 'schedule'];
     const action = event.pathParameters?.action;
 
     if (!action || !options.includes(action)) return { statusCode: 400, body: JSON.stringify({ error: "Nenhuma função especificada" }) };
@@ -112,8 +112,11 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             case 'schedule':
                 response = Data.getSchedule(page);
                 break;
-            default:
+            case 'basic':
                 response = Data.getAll(page);
+                break;
+            default:
+                response = JSON.stringify({ statusCode: 200, body: { data: 'No data' } })
                 break;
         }
 
