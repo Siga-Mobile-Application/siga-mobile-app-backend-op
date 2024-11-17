@@ -35,6 +35,8 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         const page = await browser.newPage();
 
+        return { statusCode: 200, body: JSON.stringify({ "success": "sucess" }) };
+
         await page.goto(pageLogin, { waitUntil: 'networkidle2' }).catch((e) => {
             console.log(e);
             return {
@@ -104,7 +106,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
     } catch (err) {
         return {
             statusCode: 400,
-            body: JSON.stringify({ error: "Problema ao acessar o siga", err })
+            body: JSON.stringify({ error: "Problema ao acessar o siga" })
         }
     }
 }
