@@ -27,43 +27,47 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
     try {
         let message;
-        const chrome = await Chromium.executablePath;
 
         const browser = await puppeteer.launch({
             args: Chromium.args,
             defaultViewport: Chromium.defaultViewport,
             executablePath: await Chromium.executablePath(),
             headless: Chromium.headless,
-        }).catch(() => {
-            message = 'Erro ao carregar chrome';
-        });
+        })
+            .catch((e) => {
+                message = 'launch';
+            });
 
-        if (!browser) return { statusCode: 200, body: JSON.stringify({ message: message, chrome: chrome }) };
+        if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
 
-        const page = await browser!.newPage();
+        const page = await browser!.newPage()
+            .catch((e) => {
+                message = 'page';
+            });
 
-        await page.goto(pageLogin, { waitUntil: 'networkidle2' }).catch((e) => {
-            console.log(e);
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: "Problema ao acessar o siga" })
-            }
-        });
+        if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
+
+        await page!.goto(pageLogin, { waitUntil: 'networkidle2' })
+            .catch((e) => {
+                message = 'goto';
+            });
+
+        if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
 
         const nameInput = '#vSIS_USUARIOID';
-        await page.type(nameInput, user);
+        await page!.type(nameInput, user);
 
         const passInput = '#vSIS_USUARIOSENHA'
-        await page.type(passInput, pass);
+        await page!.type(passInput, pass);
 
         const confirmButton = 'BTCONFIRMA'
-        await page.click(`input[name=${confirmButton}]`);
+        await page!.click(`input[name=${confirmButton}]`);
 
-        const result = await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
+        const result = await page!.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
             return '';
         }).catch(async () => {
             const resultId = 'span_vSAIDA';
-            const result = await page.waitForSelector(`#${resultId}`, {timeout: 3000}).then((res) => {
+            const result = await page!.waitForSelector(`#${resultId}`, { timeout: 3000 }).then((res) => {
                 return res?.evaluate(val => val.querySelector('text')?.textContent);
             });
 
@@ -75,7 +79,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             body: JSON.stringify({ error: result })
         }
 
-        await page.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch());
+        await page!.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch());
 
         // req.headers.user = pass;
         // req.headers.pass = user;
