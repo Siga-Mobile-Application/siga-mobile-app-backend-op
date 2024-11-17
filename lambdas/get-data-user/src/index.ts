@@ -39,7 +39,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
     const browser = await puppeteer.launch({
         args: chromium_min.args,
         defaultViewport: chromium_min.defaultViewport,
-        executablePath: await chromium_min.executablePath(browser_path),//'https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar'),
+        executablePath: await chromium_min.executablePath(browser_path),
         headless: chromium_min.headless,
     })
         .then((res) => { console.log("Connected"); return res; })
@@ -94,26 +94,20 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         await page.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch(() => { })).catch(() => { });
 
-        // req.headers.user = pass;
-        // req.headers.pass = user;
-
-        // res.locals.page = page;
-        // res.locals.browser = browser;
-
         let response;
 
         switch (action) {
             case 'grade':
-                response = Data.getGrade(page);
+                response = await Data.getGrade(page);
                 break;
             case 'history':
-                response = Data.getHistory(page);
+                response = await Data.getHistory(page);
                 break;
             case 'schedule':
-                response = Data.getSchedule(page);
+                response = await Data.getSchedule(page);
                 break;
             case 'basic':
-                response = Data.getAll(page);
+                response = await Data.getAll(page);
                 break;
             default:
                 response = JSON.stringify({ statusCode: 200, body: { data: 'No data' } })
