@@ -6,6 +6,7 @@ import { ScheduleClassProps, ScheduleProps } from './interfaces/schedule';
 import { StudentDataProps } from './interfaces/student';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { decode } from './helper/auth';
+import Chromium from '@sparticuz/chromium';
 
 async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const { authorization } = event.headers;
@@ -25,7 +26,16 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         body: JSON.stringify({ error: "Credenciais não informadas!" })
     }
 
-    const browser = await puppeteer.launch({ headless: "shell" });
+    const browser = await puppeteer.launch({ 
+        args: Chromium.args,
+        defaultViewport: Chromium.defaultViewport,
+        executablePath: await Chromium.executablePath(
+            process.env.AWS_EXECUTION_ENV 
+            ? './node_modules/@sparticuz/chormium/bin'
+            : undefined,
+        ),
+        headless: Chromium.headless
+     });
     const page = await browser.newPage();
 
     try {

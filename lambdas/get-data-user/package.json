@@ -10,6 +10,7 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@sparticuz/chromium": "^131.0.0",
     "bcrypt": "^5.1.1",
     "express": "^4.19.2",
     "puppeteer": "^23.2.1"
