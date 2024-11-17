@@ -6,7 +6,7 @@ resource "aws_apigatewayv2_api" "apigateway-lambda" {
 resource "aws_apigatewayv2_stage" "apigateway-lambda" {
   api_id = aws_apigatewayv2_api.apigateway-lambda.id
 
-  name        = "${local.app_name}-${var.environment}-lambda_stage"
+  name        = "${local.app_name}-${var.environment}"
   auto_deploy = true
 
   access_log_settings {
@@ -39,7 +39,7 @@ resource "aws_apigatewayv2_integration" "get_data_user" {
 resource "aws_apigatewayv2_route" "get_data_user" {
   api_id = aws_apigatewayv2_api.apigateway-lambda.id
 
-  route_key = "GET /data"
+  route_key = "GET /data/{action}"
   target    = "integrations/${aws_apigatewayv2_integration.get_data_user.id}"
 }
 
