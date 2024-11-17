@@ -6,6 +6,7 @@ resource "aws_s3_object" "lambda_user" {
   key    = "build/hello.zip"
   bucket = aws_s3_bucket.bucket.id
   source = local.source_get_data_user
+  etag = filebase64sha256("../build/lambdas/hello.zip")
 }
 
 resource "aws_lambda_function" "hello_word" {
