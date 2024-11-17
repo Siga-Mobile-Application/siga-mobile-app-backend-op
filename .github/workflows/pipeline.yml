@@ -82,7 +82,7 @@ jobs:
         working-directory: build/lambdas/${{ matrix.lambdas }}
         run: |
           if [ -d "build" ]; then
-            ls -A | grep -v node-modules | grep -v build | xargs rm -rf
+            ls -A | grep -v node_modules | grep -v build | xargs rm -rf
             mv build/* .
             rm -rf build
           fi
