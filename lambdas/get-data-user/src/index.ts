@@ -71,7 +71,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         await page.click(`input[name=${confirmButton}]`);
 
         console.log('Going to home page...');
-        const result = await page!.waitForNavigation({ waitUntil: 'networkidle2', timeout: 7000 }).then(() => {
+        const result = await page.waitForNavigation({ waitUntil: 'networkidle2', timeout: 7000 }).then(() => {
             return '';
         }).catch(async () => {
             const resultId = 'span_vSAIDA';
@@ -100,7 +100,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         }
     } catch (err) {
         return {
-            statusCode: 400,
+            statusCode: 500,
             body: JSON.stringify({ error: "Problema ao acessar o siga" })
         }
     } finally {
