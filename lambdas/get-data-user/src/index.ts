@@ -78,7 +78,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             return '';
         }).catch(async () => {
             const resultId = 'span_vSAIDA';
-            const result = await page.waitForSelector(`#${resultId}`, { timeout: 3000 }).then((res) => {
+            const result = await page.waitForSelector(`#${resultId}`).then((res) => {
                 return res?.evaluate(val => val.querySelector('text')?.textContent).catch(() => { });
             }).catch(() => { });
 
