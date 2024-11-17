@@ -1,27 +1,59 @@
-resource "aws_api_gateway_rest_api" "apigateway" {
-    name = ""
-    body = jsondecode({
-        openapi: "3.0.1"
-        info = {
-            title = "siga-app-requests-api",
-            version = "1.0"
-        }
-        paths = {
-            ("/data") = {
-                get = {
-                    responses = {
-                        "200" = {
-                            description = "200 response"
-                            content = {}
-                        }
-                    }
-                    x-amazon-apigateway-integration = {
-                        type = "aws_proxy"
-                        httpMethod = "GET"
-                        uri = "${aws_lambda_function.get_data_user.invoke_arn}"
-                    }
-                }
-            }
-        }
-    })
+resource "aws_apigatewayv2_api" "apigateway-lambda" {
+  name          = "${local.app_name}-${var.environment}-api"
+  protocol_type = "HTTP"
+}
+
+resource "aws_apigatewayv2_stage" "apigateway-lambda" {
+  api_id = aws_apigatewayv2_api.apigateway-lambda.id
+
+  name        = "${local.app_name}-${var.environment}-lambda_stage"
+  auto_deploy = true
+
+  access_log_settings {
+    destination_arn = aws_cloudwatch_log_group.api_log_group.arn
+
+    format = jsonencode({
+      status                  = "$context.status"
+      requestId               = "$context.requestId"
+      sourceIp                = "$context.identity.sourceIp"
+      requestTime             = "$context.requestTime"
+      protocol                = "$context.protocol"
+      httpMethod              = "$context.httpMethod"
+      resourcePath            = "$context.resourcePath"
+      routeKey                = "$context.routeKey"
+      responseLength          = "$context.responseLength"
+      integrationErrorMessage = "$context.integrationErrorMessage"
+      }
+    )
+  }
+}
+
+resource "aws_apigatewayv2_integration" "get_data_user" {
+  api_id = aws_apigatewayv2_api.apigateway-lambda.id
+
+  integration_uri    = aws_lambda_function.get_data_user.invoke_arn
+  integration_type   = "AWS_PROXY"
+  integration_method = "GET"
+}
+
+resource "aws_apigatewayv2_route" "get_data_user" {
+  api_id = aws_apigatewayv2_api.apigateway-lambda.id
+
+  route_key = "GET /data"
+  target    = "integrations/${aws_apigatewayv2_integration.get_data_user.id}"
+}
+
+resource "aws_cloudwatch_log_group" "api_log_group" {
+  name = "/aws/api_log_grup/${aws_apigatewayv2_api.apigateway-lambda.name}"
+
+  retention_in_days = 1
+}
+
+resource "aws_lambda_permission" "api_gw" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.hello_world.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/*/*"
 }
