@@ -5,7 +5,8 @@ import { ScheduleClassProps, ScheduleProps } from './interfaces/schedule';
 import { StudentDataProps } from './interfaces/student';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { decode } from './helper/auth';
-import chromium from '@sparticuz/chromium-min';
+import chromium_min from '@sparticuz/chromium-min';
+import Chromium = require("@sparticuz/chromium");
 
 async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const { authorization } = event.headers;
@@ -31,11 +32,15 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
     try {
         let message;
 
+        const browser_path = await Chromium.executablePath();
+
+        if(!browser_path) throw "Não foi possível concluir a solicitação";
+
         const browser = await puppeteer.launch({
-            args: chromium.args,
-            defaultViewport: chromium.defaultViewport,
-            executablePath: await chromium.executablePath(),
-            headless: chromium.headless,
+            args: chromium_min.args,
+            defaultViewport: chromium_min.defaultViewport,
+            executablePath: await chromium_min.executablePath(browser_path),//'https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar'),
+            headless: chromium_min.headless,
         });
 
         console.log('Connected to browser...');
