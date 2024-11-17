@@ -34,7 +34,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         const browser = await puppeteer.launch({
             args: chromium.args,
             defaultViewport: chromium.defaultViewport,
-            executablePath: await chromium.executablePath('https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar'),
+            executablePath: await chromium.executablePath(),
             headless: chromium.headless,
         });
 
