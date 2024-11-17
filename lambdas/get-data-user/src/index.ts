@@ -53,10 +53,9 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         const pageTitle = await page.title();
 
-        if (message) return { statusCode: 200, body: JSON.stringify({ title: pageTitle }) };
+        if (pageTitle) return { statusCode: 200, body: JSON.stringify({ title: pageTitle }) };
 
         await browser.close();
-
 
         if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
 
