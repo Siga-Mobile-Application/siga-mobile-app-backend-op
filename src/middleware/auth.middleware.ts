@@ -15,29 +15,21 @@ export default async function authMiddleware(req: Request, res: Response, next: 
 
     if (!user || !pass) return res.status(401).json({ error: 'Credenciais não informadas!' });
 
-    const browser = await puppeteer.launch({ headless: "shell" });
-    const page = await browser.newPage();
 
     try {
-        await page.goto(pageLogin, { waitUntil: 'networkidle2' }).catch((e) => {
-            console.log(e);
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
+        const browser = await puppeteer.launch({ headless: "shell" });
+        const page = await browser.newPage();
+
+        await page.goto(pageLogin, { waitUntil: 'networkidle2' });
 
         const nameInput = '#vSIS_USUARIOID';
-        await page.type(nameInput, user).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
+        await page.type(nameInput, user);
 
         const passInput = '#vSIS_USUARIOSENHA'
-        await page.type(passInput, pass).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
+        await page.type(passInput, pass);
 
         const confirmButton = 'BTCONFIRMA'
-        await page.click(`input[name=${confirmButton}]`).catch(() => {
-            res.status(400).json({ error: "Problema ao acessar o siga" });
-        });
+        await page.click(`input[name=${confirmButton}]`);
 
         const result = await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
             return '';
@@ -45,8 +37,6 @@ export default async function authMiddleware(req: Request, res: Response, next: 
             const resultId = 'span_vSAIDA';
             const result = await page.waitForSelector(`#${resultId}`).then((res) => {
                 return res?.evaluate(val => val.querySelector('text')?.textContent);
-            }).catch(() => {
-                res.status(400).json({ error: "Problema ao acessar o siga" });
             });
 
             return result ?? 'Problema com a conexão';
@@ -63,7 +53,7 @@ export default async function authMiddleware(req: Request, res: Response, next: 
         res.locals.browser = browser;
         next();
     } catch (err) {
-        return;
+        return res.status(400).json({ error: "Problema ao acessar o siga" });;
     } finally {
     }
 }

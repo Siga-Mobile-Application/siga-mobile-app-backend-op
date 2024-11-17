@@ -5,10 +5,10 @@ import { ScheduleClassProps, ScheduleProps } from './interfaces/schedule';
 import { StudentDataProps } from './interfaces/student';
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import { decode } from './helper/auth';
+import Chromium from "chrome-aws-lambda";
 
 async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const { authorization } = event.headers;
-    const chromium = require('chrome-aws-lambda');
 
     if (!authorization) return {
         statusCode: 401,
@@ -27,15 +27,13 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
     try {
         const browser = await puppeteer.launch({
-            args: chromium.args,
-            defaultViewport: chromium.defaultViewport,
-            executablePath: await chromium.executablePath,
-            headless: chromium.headless,
+            args: Chromium.args,
+            defaultViewport: Chromium.defaultViewport,
+            executablePath: await Chromium.executablePath,
+            headless: Chromium.headless,
         });
 
         const page = await browser.newPage();
-
-        return { statusCode: 200, body: JSON.stringify({ "success": "sucess" }) };
 
         await page.goto(pageLogin, { waitUntil: 'networkidle2' }).catch((e) => {
             console.log(e);
