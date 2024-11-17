@@ -27,6 +27,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
     try {
         let message;
+        const chrome = Chromium.executablePath;
 
         const browser = await puppeteer.launch({
             args: Chromium.args,
@@ -37,8 +38,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             message = 'Erro ao carregar chrome';
         });
 
-        if (!browser) return { statusCode: 200, body: JSON.stringify({ message: message }) };
-
+        if (!browser) return { statusCode: 200, body: JSON.stringify({ message: message, chrome: chrome }) };
 
         const page = await browser!.newPage();
 
