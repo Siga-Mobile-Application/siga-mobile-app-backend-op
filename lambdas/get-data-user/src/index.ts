@@ -31,7 +31,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         defaultViewport: Chromium.defaultViewport,
         executablePath: await Chromium.executablePath(
             process.env.AWS_EXECUTION_ENV 
-            ? 'node_modules/@sparticuz/chormium/bin'
+            ? './node_modules/@sparticuz/chromium/bin'
             : undefined,
         ),
         headless: Chromium.headless
