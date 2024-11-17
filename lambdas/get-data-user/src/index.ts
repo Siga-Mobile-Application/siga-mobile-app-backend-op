@@ -33,53 +33,59 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             defaultViewport: Chromium.defaultViewport,
             executablePath: await Chromium.executablePath(),
             headless: "new",
-        })
-            .catch((e) => {
-                message = 'launch';
-            });
-
-        if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
-
-        const page = await browser!.newPage()
-            .catch((e) => {
-                message = 'page';
-            });
-
-        if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
-
-        await page!.goto(pageLogin, { waitUntil: 'networkidle2', timeout: 10000 })
-            .catch((e) => {
-                message = e.message;
-            });
-
-        if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
-
-        const nameInput = '#vSIS_USUARIOID';
-        await page!.type(nameInput, user);
-
-        const passInput = '#vSIS_USUARIOSENHA'
-        await page!.type(passInput, pass);
-
-        const confirmButton = 'BTCONFIRMA'
-        await page!.click(`input[name=${confirmButton}]`);
-
-        const result = await page!.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
-            return '';
-        }).catch(async () => {
-            const resultId = 'span_vSAIDA';
-            const result = await page!.waitForSelector(`#${resultId}`, { timeout: 3000 }).then((res) => {
-                return res?.evaluate(val => val.querySelector('text')?.textContent);
-            });
-
-            return result ?? 'Problema com a conexão';
+        }).then(async (browse) => {
+            const page = await browse.newPage();
+            await page.goto('https://www.facebook.com/');
+            message = 'foi mesmo';
         });
 
-        if (result) return {
-            statusCode: 400,
-            body: JSON.stringify({ error: result })
-        }
+        if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
+        //     .catch((e) => {
+        //         message = 'launch';
+        //     });
 
-        await page!.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch());
+        // if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
+
+        // const page = await browser!.newPage()
+        //     .catch((e) => {
+        //         message = 'page';
+        //     });
+
+        // if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
+
+        // await page!.goto(pageLogin, { waitUntil: 'networkidle2', timeout: 10000 })
+        //     .catch((e) => {
+        //         message = e.message;
+        //     });
+
+        // if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
+
+        // const nameInput = '#vSIS_USUARIOID';
+        // await page!.type(nameInput, user);
+
+        // const passInput = '#vSIS_USUARIOSENHA'
+        // await page!.type(passInput, pass);
+
+        // const confirmButton = 'BTCONFIRMA'
+        // await page!.click(`input[name=${confirmButton}]`);
+
+        // const result = await page!.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
+        //     return '';
+        // }).catch(async () => {
+        //     const resultId = 'span_vSAIDA';
+        //     const result = await page!.waitForSelector(`#${resultId}`, { timeout: 3000 }).then((res) => {
+        //         return res?.evaluate(val => val.querySelector('text')?.textContent);
+        //     });
+
+        //     return result ?? 'Problema com a conexão';
+        // });
+
+        // if (result) return {
+        //     statusCode: 400,
+        //     body: JSON.stringify({ error: result })
+        // }
+
+        // await page!.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch());
 
         // req.headers.user = pass;
         // req.headers.pass = user;
