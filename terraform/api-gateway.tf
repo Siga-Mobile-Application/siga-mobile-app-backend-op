@@ -49,11 +49,11 @@ resource "aws_cloudwatch_log_group" "api_log_group" {
   retention_in_days = 1
 }
 
-resource "aws_lambda_permission" "api_gw" {
+resource "aws_lambda_permission" "get_data_user_policy" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.hello_world.function_name
+  function_name = aws_lambda_function.get_data_user.function_name
   principal     = "apigateway.amazonaws.com"
 
-  source_arn = "${aws_apigatewayv2_api.lambda.execution_arn}/*/*"
+  source_arn = "${aws_apigatewayv2_api.apigateway-lambda.execution_arn}/*/*"
 }
