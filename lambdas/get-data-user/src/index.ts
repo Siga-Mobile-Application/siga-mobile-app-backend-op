@@ -34,9 +34,9 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             executablePath: await Chromium.executablePath(),
             headless: "new",
         })
-            .catch((e) => {
-                message = 'launch';
-            });
+        .catch((e) => {
+            message = 'launch';
+        });
 
         if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
 
