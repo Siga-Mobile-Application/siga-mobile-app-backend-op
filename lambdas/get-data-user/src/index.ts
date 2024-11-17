@@ -32,7 +32,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             args: Chromium.args,
             defaultViewport: Chromium.defaultViewport,
             executablePath: await Chromium.executablePath(),
-            headless: "new",
+            headless: "shell",
         })
         .catch((e) => {
             message = 'launch';
