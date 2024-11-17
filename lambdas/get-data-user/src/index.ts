@@ -47,7 +47,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
 
-        await page!.goto(pageLogin, { waitUntil: 'networkidle2', timeout: 10000 })
+        await page!.goto(pageLogin, { waitUntil: 'networkidle2' })
             .catch((e) => {
                 message = e.message;
             });
