@@ -26,14 +26,21 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
     }
 
     try {
+        let message;
+
         const browser = await puppeteer.launch({
             args: Chromium.args,
             defaultViewport: Chromium.defaultViewport,
             executablePath: await Chromium.executablePath,
             headless: Chromium.headless,
+        }).catch(() => {
+            message = 'Erro ao carregar chrome';
         });
 
-        const page = await browser.newPage();
+        if (!browser) return { statusCode: 200, body: JSON.stringify({ message: message }) };
+
+
+        const page = await browser!.newPage();
 
         await page.goto(pageLogin, { waitUntil: 'networkidle2' }).catch((e) => {
             console.log(e);
@@ -44,40 +51,20 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         });
 
         const nameInput = '#vSIS_USUARIOID';
-        await page.type(nameInput, user).catch(() => {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: "Problema ao acessar o siga" })
-            }
-        });
+        await page.type(nameInput, user);
 
         const passInput = '#vSIS_USUARIOSENHA'
-        await page.type(passInput, pass).catch(() => {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: "Problema ao acessar o siga" })
-            }
-        });
+        await page.type(passInput, pass);
 
         const confirmButton = 'BTCONFIRMA'
-        await page.click(`input[name=${confirmButton}]`).catch(() => {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: "Problema ao acessar o siga" })
-            }
-        });
+        await page.click(`input[name=${confirmButton}]`);
 
         const result = await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 3000 }).then(() => {
             return '';
         }).catch(async () => {
             const resultId = 'span_vSAIDA';
-            const result = await page.waitForSelector(`#${resultId}`).then((res) => {
+            const result = await page.waitForSelector(`#${resultId}`, {timeout: 3000}).then((res) => {
                 return res?.evaluate(val => val.querySelector('text')?.textContent);
-            }).catch(() => {
-                return {
-                    statusCode: 400,
-                    body: JSON.stringify({ error: "Problema ao acessar o siga" })
-                }
             });
 
             return result ?? 'Problema com a conexão';
@@ -89,8 +76,6 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         }
 
         await page.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch());
-
-
 
         // req.headers.user = pass;
         // req.headers.pass = user;
