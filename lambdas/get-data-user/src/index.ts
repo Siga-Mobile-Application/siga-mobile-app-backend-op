@@ -40,18 +40,20 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         defaultViewport: chromium_min.defaultViewport,
         executablePath: await chromium_min.executablePath(browser_path),//'https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar'),
         headless: chromium_min.headless,
-    }).catch(() => { });
+    })
+    .then((res) => { console.log("Connected"); return res; })
+    .catch(() => { });
 
     if (!browser) return { statusCode: 500, body: JSON.stringify({ error: "Problema ao acessar o siga" }) };
 
     try {
         console.log('New page...');
 
-        const page = await browser.newPage();
+        const page = await browser.newPage().then((res) => { console.log("In new page"); return res; });
 
-        console.log('Going to siga...');
+        console.log('Going to SIGA...');
 
-        await page.goto(pageLogin, { waitUntil: 'networkidle2' });
+        await page.goto(pageLogin, { waitUntil: 'networkidle2' }).then((res) => { console.log("Accessed SIGA"); return res; });
 
         const title_login = await page.title();
 
@@ -60,15 +62,15 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         console.log('Input user id...');
 
         const nameInput = '#vSIS_USUARIOID';
-        await page!.type(nameInput, user);
+        await page!.type(nameInput, user).then((res) => { console.log("User id inputed"); return res; });
 
         console.log('Input user pass...');
         const passInput = '#vSIS_USUARIOSENHA'
-        await page.type(passInput, pass);
+        await page.type(passInput, pass).then((res) => { console.log("User pass inputed"); return res; });
 
         console.log('Click confirm button...');
         const confirmButton = 'BTCONFIRMA'
-        await page.click(`input[name=${confirmButton}]`);
+        await page.click(`input[name=${confirmButton}]`).then((res) => { console.log("Button clicked"); return res; });
 
         console.log('Going to home page...');
 
