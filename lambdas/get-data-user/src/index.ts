@@ -41,8 +41,8 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
         executablePath: await chromium_min.executablePath(browser_path),//'https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar'),
         headless: chromium_min.headless,
     })
-    .then((res) => { console.log("Connected"); return res; })
-    .catch(() => { });
+        .then((res) => { console.log("Connected"); return res; })
+        .catch(() => { });
 
     if (!browser) return { statusCode: 500, body: JSON.stringify({ error: "Problema ao acessar o siga" }) };
 
@@ -53,7 +53,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         console.log('Going to SIGA...');
 
-        await page.goto(pageLogin, { waitUntil: 'networkidle2' }).then((res) => { console.log("Accessed SIGA"); return res; });
+        await page.goto(pageLogin, { waitUntil: 'load' }).then((res) => { console.log("Accessed SIGA"); return res; });
 
         const title_login = await page.title();
 
