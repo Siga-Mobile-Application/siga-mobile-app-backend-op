@@ -53,6 +53,10 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
 
         await page.goto(pageLogin, { waitUntil: 'networkidle2' });
 
+        const title = await page.title();
+
+        if (title) console.log('Title: ' + title);
+
         console.log('Input user id...');
 
         const nameInput = '#vSIS_USUARIOID';
@@ -73,7 +77,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             const resultId = 'span_vSAIDA';
             const result = await page.waitForSelector(`#${resultId}`, { timeout: 3000 }).then((res) => {
                 return res?.evaluate(val => val.querySelector('text')?.textContent);
-            }).catch(() => {});
+            }).catch(() => { });
 
             return result ?? 'Problema com a conexão';
         });
@@ -83,7 +87,7 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             body: JSON.stringify({ error: result })
         }
 
-        await page.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch());
+        await page.waitForSelector('.PopupHeaderButton', { timeout: 1000 }).then((res) => res?.click().catch()).catch();
 
         // req.headers.user = pass;
         // req.headers.pass = user;
