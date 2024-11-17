@@ -12,7 +12,8 @@
   "dependencies": {
     "bcrypt": "^5.1.1",
     "chrome-aws-lambda": "^10.1.0",
-    "puppeteer-core": "10.1.0"
+    "@sparticuz/chromium": "^109.0.5",
+    "puppeteer-core": "^19.4.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.145",
