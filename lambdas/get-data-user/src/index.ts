@@ -36,21 +36,20 @@ async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyRe
             defaultViewport: chromium.defaultViewport,
             executablePath: await chromium.executablePath('https://github.com/Sparticuz/chromium/releases/download/v119.0.2/chromium-v119.0.2-pack.tar'),
             headless: chromium.headless,
-        })
-            .catch((e) => {
-                message = 'launch';
-            });
+        });
 
         console.log('Connected to browser...');
 
-        if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
-
-        const page = await browser!.newPage()
-            .catch((e) => {
-                message = 'page';
-            });
+        const page = await browser.newPage();
 
         console.log('New page...');
+
+        await page.goto("https://example.com");
+        const pageTitle = await page.title();
+
+        if (message) return { statusCode: 200, body: JSON.stringify({ title: pageTitle }) };
+
+        await browser.close();
 
 
         if (message) return { statusCode: 200, body: JSON.stringify({ message: message }) }
