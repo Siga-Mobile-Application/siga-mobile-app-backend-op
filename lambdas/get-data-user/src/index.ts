@@ -9,11 +9,9 @@ import chromium from '@sparticuz/chromium-min';
 
 async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const { authorization } = event.headers;
-    const params = event.pathParameters;
+    const action = event.pathParameters?.action;
 
-    if (params) return { statusCode: 200, body: JSON.stringify({ params }) };
-
-    console.log(params);
+    if (!action) return { statusCode: 400, body: JSON.stringify({ error: "Nenhuma função especificada" }) };
 
     if (!authorization) return {
         statusCode: 401,
