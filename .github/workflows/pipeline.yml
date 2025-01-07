@@ -1,0 +1,88 @@
+name: "Terraform Workflow"
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+
+jobs:
+  build-node:
+    runs-on: ubuntu-latest
+    container:
+      image: node:slim
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Show environment
+        run: echo "Building for ${{ inputs.environment }}"
+
+      - name: Install dependencies
+        run: |
+          if [ -f "package-lock.json" ]; then
+            npm ci
+          else
+           echo "::error file=package.json,line=1,col=1::No package-lock.json found."
+           exit 1
+          fi
+
+      - name: Build TS
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            npm run build
+          else
+            echo "::error file=package.json,line=1,col=1::Typescript not configured."
+          fi
+      
+      - name: Remove Dev Dependencies
+        run: npm ci --omit=dev
+
+      - name: Clear directory
+        run: |
+          if [ -d "dist" ]; then
+            ls -A | grep -v node_modules | grep -v dist | xargs rm -rf
+          fi
+
+      - name: Setup dependencies
+        run: apt-get update && apt-get install zip wget -y
+
+      - name: Zip file
+        run: |
+          zip -r deploy.zip *
+
+      - name: Clean up
+        run: ls -A | grep -v deploy.zip | xargs rm -rf 
+      
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: deploy.zip
+  
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-node]
+    environment: 
+      name: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+         pattern: build
+         path: build
+         merge-multiple: true
+
+      - name: Show all
+        run: ls -A
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+           files: build/*

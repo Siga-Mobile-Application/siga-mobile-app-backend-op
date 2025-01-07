@@ -1,0 +1,16 @@
+name: "Main Deploy"
+
+on:
+    push:
+        branches:
+            - 'main'
+
+permissions:
+  id-token: write
+  contents: write
+
+jobs: 
+    terraform:
+        uses: ./.github/workflows/pipeline.yml
+        with: 
+            environment: prod
