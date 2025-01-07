@@ -43,7 +43,7 @@ jobs:
       - name: Clear directory
         run: |
           if [ -d "dist" ]; then
-            ls -A 
+            ls -A | grep -v node_modules | grep -v dist | xargs rm -rf
           fi
 
       - name: Setup dependencies
@@ -60,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: ./
+          path: deploy.zip
   
   release:
     runs-on: ubuntu-latest
@@ -72,7 +72,6 @@ jobs:
         uses: actions/download-artifact@v4
         with:
          pattern: build
-         path: ./
          merge-multiple: true
 
       - name: Create release
