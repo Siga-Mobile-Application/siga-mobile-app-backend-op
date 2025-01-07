@@ -43,7 +43,7 @@ jobs:
       - name: Clear directory
         run: |
           if [ -d "dist" ]; then
-            ls -A | grep -v node_modules | grep -v dist | xargs rm -rf
+            ls -A 
           fi
 
       - name: Setup dependencies
@@ -53,7 +53,8 @@ jobs:
         run: |
           zip -r deploy.zip *
 
-
+      - name: Clean up
+        run: ls -A | grep -v deploy.zip | xargs rm -rf 
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
