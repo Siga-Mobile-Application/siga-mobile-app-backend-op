@@ -1,31 +1,27 @@
-import { Request, Response } from 'express'
-import { Browser, Page } from "puppeteer";
+import { Browser, Page } from "puppeteer-core";
 import { transformData } from '../../helper/transformData';
-import { globalContainerData, pageHistory, pageSchedule, pageLogin, pageGrades, globalAllInfo } from '../../constants';
-import { ScheduleClassProps, ScheduleProps } from '../../interfaces/schedule';
+import { globalContainerData, pageHistory, pageSchedule, pageGrades, globalAllInfo } from '../../constants';
 import { StudentDataProps } from '../../interfaces/student';
+import { ScheduleClassProps, ScheduleProps } from '../../interfaces/schedule';
+import { Request, Response } from 'express'
 
 export default class Data {
-    static async getAll(req: Request, res: Response) {
-        const { user, pass } = req.headers;
+    static async getBasic(req: Request, res: Response) {
         const page: Page = res.locals.page;
         const browser: Browser = res.locals.browser;
 
-        const dataRaw = await page.waitForSelector(`input[name=${globalAllInfo}]`, { hidden: true }).then((res) => {
-            return res?.evaluate(val => val.value);
-        }).catch(() => (''));
-
-        if (!dataRaw) return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
-
         try {
+            const dataRaw = await page.waitForSelector(`input[name=${globalAllInfo}]`, { hidden: true }).then((res) => {
+                if (res) return res.evaluate(val => val.value);
+                throw "Não foi possível resgatar os dados";
+            });
+
             const student: StudentDataProps = JSON.parse(`${dataRaw.substring(0, dataRaw.indexOf(',"vEMAILWEBSAI"'))}}`);
 
             const imageId = 'MPW0041FOTO'
             const image = await page.waitForSelector(`div #${imageId}`).then((res) => {
                 return res?.evaluate(val => val.querySelector('img')?.getAttribute('src'));
             });
-
-            await browser.close();
 
             return res.status(200).json({
                 ra: student.MPW0041vACD_ALUNOCURSOREGISTROACADEMICOCURSO,
@@ -47,12 +43,11 @@ export default class Data {
             console.log(error);
             return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
         } finally {
-            browser.close();
+            await browser.close();
         }
     }
 
     static async getHistory(req: Request, res: Response) {
-        const { user, pass } = req.headers;
         const page: Page = res.locals.page;
         const browser: Browser = res.locals.browser;
 
@@ -60,10 +55,9 @@ export default class Data {
             await page.goto(pageHistory, { waitUntil: 'networkidle2' });
 
             const dataRaw = await page.waitForSelector(`input[name=${globalAllInfo}]`, { hidden: true }).then((res) => {
-                return res?.evaluate(val => val.value);
-            }).catch(() => (''));
-
-            if (!dataRaw) return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
+                if (res) return res.evaluate(val => val.value);
+                throw "Não foi possível resgatar os dados";
+            });
 
             const data = dataRaw.substring(dataRaw.indexOf('[{"ACD_AlunoId'), dataRaw.lastIndexOf(']') + 1);
 
@@ -74,24 +68,21 @@ export default class Data {
         } catch (error) {
             return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
         } finally {
-            browser.close();
+            await browser.close();
         }
     }
 
     static async getSchedule(req: Request, res: Response) {
-        const { user, pass } = req.headers;
         const page: Page = res.locals.page;
         const browser: Browser = res.locals.browser;
 
         try {
-
             await page.goto(pageSchedule, { waitUntil: 'networkidle2' });
 
             const scheduleHeaderRaw = await page.waitForSelector(`input[name=${globalContainerData()}]`, { hidden: true }).then((res) => {
-                return res?.evaluate(val => val.value);
-            }).catch(() => (''));
-
-            if (!scheduleHeaderRaw) return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
+                if (res) return res.evaluate(val => val.value);
+                throw "Não foi possível resgatar os dados";
+            });
 
             const scheduleHeader: ScheduleProps[] = transformData(scheduleHeaderRaw, 'scheduleHeader');
 
@@ -114,17 +105,15 @@ export default class Data {
                 });
             }
 
-
             return res.status(200).json({ data: scheduleHeader });
         } catch (error) {
             return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
         } finally {
-            browser.close();
+            await browser.close();
         }
     }
 
     static async getGrade(req: Request, res: Response) {
-        const { user, pass } = req.headers;
         const page: Page = res.locals.page;
         const browser: Browser = res.locals.browser;
 
@@ -132,10 +121,9 @@ export default class Data {
             await page.goto(pageGrades, { waitUntil: 'networkidle2' });
 
             const dataRaw = await page.waitForSelector(`input[name=${globalAllInfo}]`, { hidden: true }).then((res) => {
-                return res?.evaluate(val => val.value);
-            }).catch(() => (''));
-
-            if (!dataRaw) return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
+                if (res) return res.evaluate(val => val.value);
+                throw "Não foi possível resgatar os dados";
+            });
 
             const objectName = '"vACD_ALUNONOTASPARCIAISRESUMO_SDT":';
             const data = dataRaw.substring(dataRaw.indexOf(objectName) + objectName.length, dataRaw.lastIndexOf('}]') + 2);
@@ -146,7 +134,7 @@ export default class Data {
         } catch (error) {
             return res.status(400).json({ error: 'Não foi possível resgatar os dados' });
         } finally {
-            browser.close();
+            await browser.close();
         }
     }
 }

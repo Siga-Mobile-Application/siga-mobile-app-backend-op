@@ -14,7 +14,3 @@ jobs:
         uses: ./.github/workflows/pipeline.yml
         with: 
             environment: qual
-            aws-assume-role-arn: "arn:aws:iam::975050204462:role/github-actions-siga-app-pipeline"
-            aws-region: "sa-east-1"
-            aws-statefile-s3-bucket: "siga-app-sa-east-1-terraform-statefile"
-            aws-lock-dynamodb-table: "siga-app-sa-east-1-terraform-lock"
