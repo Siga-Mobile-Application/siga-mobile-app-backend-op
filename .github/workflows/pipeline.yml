@@ -50,7 +50,7 @@ jobs:
         run: apt-get update && apt-get install zip wget -y
 
       - name: Set env keys
-        run: echo API_KEY=123 > .env
+        run: echo API_KEY=123 >> .env
 
       - name: Zip file
         run: |
