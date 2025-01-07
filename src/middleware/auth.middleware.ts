@@ -15,7 +15,7 @@ export default async function authMiddleware(req: Request, res: Response, next: 
 
     if (!user || !pass) return res.status(401).json({ error: 'Credenciais não informadas!' });
 
-    const browser = await puppeteer.launch({ headless: true })
+    const browser = await puppeteer.launch({ headless: true, args: [ '--ignore-certificate-errors' ] })
     .then((res) => { console.log("Connected to browser..."); return res; })
     .catch(() => { });
 
@@ -69,7 +69,7 @@ export default async function authMiddleware(req: Request, res: Response, next: 
 
         next();
     } catch (err) {
-        await browser.close();
+        // await browser.close();
         return res.status(500).json({ error: "Problema ao acessar o siga", detail: JSON.stringify(err) });
     }
 }
