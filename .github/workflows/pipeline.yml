@@ -74,10 +74,10 @@ jobs:
          pattern: build
          merge-multiple: true
 
-      - name: Verify
-        run: ls -A
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Create release
+      - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           tag: ${{ github.ref_name }}
