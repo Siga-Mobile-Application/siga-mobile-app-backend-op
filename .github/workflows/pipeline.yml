@@ -8,43 +8,19 @@ on:
         required: true
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      matrix_node: ${{ steps.set-matrix-node.outputs.matrix }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: List node files
-        id: set-matrix-node
-        working-directory: src
-        run: |
-          arr="["; for i in $(ls -d *); do arr="$arr\"$i\","; done; arr="${arr::-1}]"
-          echo "matrix=$arr" >> $GITHUB_OUTPUT
-
   build-node:
     runs-on: ubuntu-latest
     container:
       image: node:slim
     environment:
       name: ${{ inputs.environment }}
-    needs: [setup]
-    strategy:
-      matrix:
-        lambdas: ${{ fromJson(needs.setup.outputs.matrix_node) }}
     steps:
       - uses: actions/checkout@v4
       
       - name: Show environment
         run: echo "Building for ${{ inputs.environment }}"
 
-      - name: Copy to build directory
-        run: |
-          mkdir -p build/src
-          cp -r src/${{ matrix.lambdas }} build/lambdas/${{ matrix.lambdas }}
-
       - name: Install dependencies
-        working-directory: build/src/${{ matrix.lambdas }}
         run: |
           if [ -f "package-lock.json" ]; then
             npm ci
@@ -54,7 +30,6 @@ jobs:
           fi
 
       - name: Build TS
-        working-directory: build/src/${{ matrix.lambdas }}
         run: |
           if [ -f "tsconfig.json" ]; then
             npm run build
@@ -63,32 +38,46 @@ jobs:
           fi
       
       - name: Remove Dev Dependencies
-        working-directory: build/src/${{ matrix.lambdas }}
         run: npm ci --omit=dev
 
-      - name: Clear build directory
-        working-directory: build/src/${{ matrix.lambdas }}
+      - name: Clear directory
         run: |
-          if [ -d "build" ]; then
-            ls -A | grep -v node_modules | grep -v build | xargs rm -rf
-            mv build/* .
-            rm -rf build
+          if [ -d "dist" ]; then
+            ls -A | grep -v node_modules | grep -v dist | xargs rm -rf
           fi
 
       - name: Setup dependencies
         run: apt-get update && apt-get install zip wget -y
 
       - name: Zip file
-        working-directory: build/src/${{ matrix.lambdas }}
         run: |
-          zip -r ${{ matrix.lambdas }}.zip *
-          cp ${{ matrix.lambdas }}.zip ../
+          zip -r deploy.zip *
 
       - name: Clean up
-        run: rm -rf build/src/${{ matrix.lambdas }}
+        run: ls -A | grep -v deploy | xargs rm -rf 
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: build-${{ matrix.lambdas }}
-          path: build
+          name: build
+          path: ./
+  
+  release:
+    name: Release pushed tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+         pattern: build
+         path: ./
+         merge-multiple: true
+
+      - name: Create release
+        env:
+          tag: ${{ github.ref_name }}
+        run: |
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${tag#v}" \
+              --generate-notes
