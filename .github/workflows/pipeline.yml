@@ -56,9 +56,6 @@ jobs:
       - name: Clean up
         run: ls -A | grep -v deploy.zip | xargs rm -rf 
       
-      - name: Verify
-        run: ls -A
-      
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -76,6 +73,9 @@ jobs:
         with:
          pattern: build
          merge-multiple: true
+
+      - name: Verify
+        run: ls -A
 
       - name: Create release
         env:
