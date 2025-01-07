@@ -54,7 +54,7 @@ jobs:
           zip -r deploy.zip *
 
       - name: Clean up
-        run: ls -A | grep -v deploy | xargs rm -rf 
+        run: ls -A | grep -v deploy.zip | xargs rm -rf 
       
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
