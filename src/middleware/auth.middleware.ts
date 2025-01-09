@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
-import { decode } from '../helper/auth';
+import { decrypt } from '../helper/auth';
 import puppeteer from "puppeteer";
 import { pageLogin } from '../constants';
 
@@ -8,20 +8,23 @@ export default async function authMiddleware(req: Request, res: Response, next: 
 
     if (!authorization) return res.status(401).json({ error: 'Credenciais não informadas!' });
 
-    const credential = decode(authorization);
-
-    const user = credential.substring(0, credential.lastIndexOf(' | ')).trim();
-    const pass = credential.substring(credential.lastIndexOf('| ') + 1, credential.length).trim();
-
-    if (!user || !pass) return res.status(401).json({ error: 'Credenciais não informadas!' });
-
-    const browser = await puppeteer.launch({ headless: true, args: [ '--ignore-certificate-errors' ] })
-    .then((res) => { console.log("Connected to browser..."); return res; })
-    .catch(() => { });
-
-    if (!browser) return res.status(500).json({ error: "Problema ao acessar o siga" });
-
     try {
+        const credential = await decrypt(authorization).catch((err) => {
+            console.log(err);
+            throw 'Erro ao processar autenticação';
+        });
+
+        const user = credential.substring(0, credential.lastIndexOf(' | ')).trim();
+        const pass = credential.substring(credential.lastIndexOf('| ') + 1, credential.length).trim();
+
+        if (!user || !pass) return res.status(401).json({ error: 'Credenciais não informadas!' });
+
+        const browser = await puppeteer.launch({ headless: true, args: ['--ignore-certificate-errors'] })
+            .then((res) => { console.log("Connected to browser..."); return res; })
+            .catch(() => { });
+
+        if (!browser) return res.status(500).json({ error: "Problema ao acessar o siga" });
+
         console.log('New page...');
 
         const page = await browser.newPage().then((res) => { console.log("In new page"); return res; });
@@ -70,6 +73,6 @@ export default async function authMiddleware(req: Request, res: Response, next: 
         next();
     } catch (err) {
         // await browser.close();
-        return res.status(500).json({ error: "Problema ao acessar o siga", detail: JSON.stringify(err) });
+        return res.status(500).json({ error: err });
     }
 }
