@@ -1,5 +1,4 @@
 import { Request, Response, NextFunction } from 'express'
-import { decrypt } from '../helper/auth';
 import puppeteer from "puppeteer";
 import { pageLogin } from '../constants';
 
@@ -9,13 +8,9 @@ export default async function authMiddleware(req: Request, res: Response, next: 
     if (!authorization) return res.status(401).json({ error: 'Credenciais não informadas!' });
 
     try {
-        const credential = await decrypt(authorization).catch((err) => {
-            console.log(err);
-            throw 'Erro ao processar autenticação';
-        });
 
-        const user = credential.substring(0, credential.lastIndexOf(' | ')).trim();
-        const pass = credential.substring(credential.lastIndexOf('| ') + 1, credential.length).trim();
+        const user = authorization.substring(0, authorization.lastIndexOf(' | ')).trim();
+        const pass = authorization.substring(authorization.lastIndexOf('| ') + 1, authorization.length).trim();
 
         if (!user || !pass) return res.status(401).json({ error: 'Credenciais não informadas!' });
 
