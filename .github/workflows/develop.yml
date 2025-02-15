@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 jobs: 
-    terraform:
+    deploy:
         uses: ./.github/workflows/pipeline.yml
         with: 
             environment: dev

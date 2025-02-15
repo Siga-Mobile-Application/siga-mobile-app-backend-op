@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --exec ts-node-dev src/server.ts",
+    "dev": "nodemon --env-file=.env --exec ts-node-dev src/server.ts",
     "build": "tsc"
   },
   "keywords": [],
